@@ -1,0 +1,11 @@
+﻿<Project Sdk="Fahrenheit.Sdk/1.0.0-alpha11">
+    <PropertyGroup>
+        <AssemblyName>NewDawn</AssemblyName>
+        <AssemblyTitle>NewDawn</AssemblyTitle>
+        <Product>FFX2 New Dawn</Product>
+        <Description>A gameplay overhaul mod for FFX-2</Description>
+        <Authors>jmcx532</Authors>
+        <RepositoryUrl>https://github.com/jmcx532/NewDawn.git</RepositoryUrl>
+        <FhManifestFlags>SEPARATE_SAVES</FhManifestFlags>
+    </PropertyGroup>
+</Project>
