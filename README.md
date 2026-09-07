@@ -1,9 +1,18 @@
 # FFX-2: New Dawn
 A [Fahrenheit](https://github.com/fahrenheit-crew/fahrenheit) based, gameplay overhaul mod for FFX-2.
 
-
-
 *This mod is in an alpha/pre-alpha state, and is under development.*
+
+# Features
+
+- Turn Based battle system, with a large rework of the MP system.
+- Battle UI changes: Commands that have their recovery time reduced, or consume HP instead of MP are highlighted in a different colour.
+  Some enemies have an Overdrive style gauge to telegraph when their big moves are incoming.
+- Dressphere Overhaul: stats and ability changes, plus 2 new dresspheres, with the possibility of a 3rd.
+- Monster Overhaul: Monsters and bosses have altered stats and some have changes to their AI.
+- Items, Garment Grids, Accessories and auto-abilities have also been reworked.
+- Damage formula rework: the magnitude of Stat up/down status effects have been reduced.
+- QoL fixes: easier access to the Ruin Depths in the Chocobo Ranch and Level 5 Experiment boss.
 
 # Installation
 
