@@ -3,13 +3,13 @@ A [Fahrenheit](https://github.com/fahrenheit-crew/fahrenheit) based, gameplay ov
 
 
 
-*This mod is in a pre-alpha state*
+*This mod is in an alpha/pre-alpha state, and is under development.*
 
 # Installation
 
 This mod requires some data files to be patched to function correctly.
 
-*1. Download a release, or build from source, and copy the files from: `bin\_\net10.0\win-x86\publish` or the downloaded release  folder into your Fahrenheit `mods\NewDawn` folder.*
+1. Download a release, or build from source, and copy the files from: `bin\_\net10.0\win-x86\publish` or the downloaded release  folder into your Fahrenheit `mods\NewDawn` folder.
 
 2. Download the [VBF Browser](https://www.nexusmods.com/finalfantasy12/mods/3) and extract the `ffx_ps2` folder from `YOUR_STEAM_LIBRARY\FINAL FANTASY FFX&FFX-2 HD Remaster\data\FFX2_Data.vbf` and place it in: `\Required File Patches\PlaceYourFilesHere`.
 
