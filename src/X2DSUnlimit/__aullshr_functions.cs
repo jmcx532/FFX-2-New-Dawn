@@ -8,10 +8,6 @@ namespace Fahrenheit.Mods.X2DSUnlimit;
 
 public partial class X2DSUnlimitModule : FhModule
 {
-    public uint h_MsGetSavePlate(uint param_1)
-    {
-        return FFX2.FhCall.MsGetSavePlate.chain_from(h_MsGetSavePlate).fnptr!(param_1);
-    }
 
     /// <summary>
     /// Reads Garment Grid data, builds a list of unique dressphere IDs that are on the grid,.
@@ -101,7 +97,7 @@ public partial class X2DSUnlimitModule : FhModule
         int num_plates_owned = 0;
         do {
 
-            int plateOwned = (int)h_MsGetSavePlate((uint)plate_id);
+            int plateOwned = (int)FFX2.FhCall.MsGetSavePlate.fnptr!((uint)plate_id);
             if (0 < plateOwned) {
 
                 for (int i = 0; i < GRID_DATA_SIZE; i++) {

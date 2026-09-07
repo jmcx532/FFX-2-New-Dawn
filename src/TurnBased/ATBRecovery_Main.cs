@@ -14,63 +14,25 @@ namespace Fahrenheit.Modules.FFX2TurnBased;
 public unsafe partial class ATBRecoveryModule : FhModule {
 
     const ushort SPHERECHANGE_ATB_COST = 25;
-    /*
-    //function delegates
-    //634140 - MsATBgetRestTime
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate uint MsATBgetRestTime(byte chr_id, uint command_id);
-    private static FhMethodHandle<MsATBgetRestTime> _MsATBgetRestTime =>
-        new ( new FhMethodLocation("FFX-2.exe", 0x234140) );
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    //6401c0 - MsCommandComplete
-    public delegate uint MsCommandComplete(byte chr_id, int param_2, int param_3);
-    private static FhMethodHandle<MsCommandComplete> _MsCommandComplete =>
-        new ( new FhMethodLocation("FFX-2.exe", 0x2401C0) );
-
-    //611450 - MsGetChr
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate int MsGetChr(uint chr_id);
-    private static FhMethodHandle<MsGetChr> _MsGetChr =>
-        new ( new FhMethodLocation("FFX-2.exe", 0x211450) );
-
-    
-
-    //6341a0
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate int MsATBgetThinkingTime(uint chr_id);
-    private static FhMethodHandle<MsATBgetThinkingTime> _MsATBgetThinkingTime =>
-        new ( new FhMethodLocation("FFX-2.exe", 0x2341A0) );
-
-    //756590 - TOBtlDrawATBGaude - NOT a typo
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void TOBtlDrawATBGaude(int param_1, int param_2, int param_3);
-    private static FhMethodHandle<TOBtlDrawATBGaude> _TOBtlDrawATBGaude =>
-        new ( new FhMethodLocation("FFX-2.exe", 0x356590) );
-
-    */
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int MsGetComData(uint arg1, byte* arg2);
     private static FhMethodHandle<MsGetComData> _MsGetComData =>
         new(new FhMethodLocation("FFX-2.exe", 0x225160));
+    
 
     public ATBRecoveryModule() { }
 
     //SUB-FUNCTIONS
-    public Chr* h_MsGetChr(uint chr_id) {
-        return FFX2.FhCall.MsGetChr.chain_from(h_MsGetChr).fnptr!(chr_id);
-    }
+    
 
     //this function returns the base address for various Excel data types
-    //param_1 is the command id (e.g 0x3002)
+    /*param_1 is the command id (e.g 0x3002)
     public unsafe int h_MsGetComData(uint command_id, byte* param_2) {
         int result = _MsGetComData.chain_from(h_MsGetComData).fnptr!(command_id, param_2);
         return result;
-    }
-    public int h_MsCheckRange(int param_1, int param_2, int param_3) {
-        return FhCall.MsCheckRange.chain_from(h_MsCheckRange).fnptr!(param_1, param_2, param_3);
-    }
+    }*/
+    
     //remove thinking time, used to cause a bug with poison/regen, probably OK now, but don't need this mechanic
     public int h_MsATBgetThinkingTime(uint chr_id) {
         int original_result = FFX2.FhCall.MsATBgetThinkingTime.chain_from(h_MsATBgetThinkingTime).fnptr!(chr_id);
@@ -85,6 +47,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
          //FFX2.FhCall.TOBtlDrawATBGaude.chain_from(h_TOBtlDrawATBGaude).fnptr!(param_1, param_2, param_3); // stub out to stop ATB gauges being drawn, or is a mkp function the actual drawer?
     }*/
 
+
     //MAIN FUNCTIONS---------------------------------------------------------------------------------------------------
     //called constantly - not a one and done function - use MsCommandComplete for those types of effects
     public uint h_MsATBgetRestTime(byte chr_id, uint command_id) {
@@ -92,11 +55,11 @@ public unsafe partial class ATBRecoveryModule : FhModule {
         int cmd_base_address;
 
         /* Gets the character's base address */
-        Chr* chr = h_MsGetChr(chr_id);
+        Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
         chr_base_address = (int)chr;
 
         // FUN_00625160 - Get the commands base address, this function can also return other Excel data types
-        cmd_base_address = h_MsGetComData(command_id, (byte*)(0));
+        cmd_base_address = _MsGetComData.fnptr!(command_id, (byte*)(0));
 
         //normal calculation
         //read the commands atb_cost and multiply
@@ -124,7 +87,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
         //delay from attacks to be added
         uint accrued_delay = (uint)*(int*)(chr_base_address + 0x9e0);
         //calculate ATB timer length and clamp between 0 and 99999
-        uint calced_recovery = (uint)h_MsCheckRange((int)((cmd_recovery_time / agility_divisor) + accrued_delay), 0, 99999);
+        uint calced_recovery = (uint)FhCall.MsCheckRange.fnptr!((int)((cmd_recovery_time / agility_divisor) + accrued_delay), 0, 99999);
 
 
         //Haste / Slow Modifier
@@ -188,7 +151,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
             percent_reduction = (int)*(byte*)(chr_base_addr + 0x5b8 + incV1);
             
             //get the base address of the menu command (e.g White Magic, Swordplay etc.)
-            menu_cmd_addr = h_MsGetComData((uint)*puVar1, (byte*)(0));
+            menu_cmd_addr = _MsGetComData.fnptr!((uint)*puVar1, (byte*)(0));
             
                 
             //condition 1: do something with the menu commands 'sub_command' parameter
@@ -208,7 +171,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
         if (recov_time_reduction == 0) {
             return 0;
         }
-        recov_time_reduction = h_MsCheckRange(recov_time_reduction, -100, 100);
+        recov_time_reduction = FhCall.MsCheckRange.fnptr!(recov_time_reduction, -100, 100);
         return recov_time_reduction;
     }
 
@@ -226,7 +189,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
             disable_time_Trip();
         }
 
-        Chr* chr = h_MsGetChr(chr_id);
+        Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
         int chr_base = (int)chr;
         //0xF3C to 0xF3D is the command that character last used, or a DS id on spherechange
         //if the character changed dressphere
@@ -253,8 +216,8 @@ public unsafe partial class ATBRecoveryModule : FhModule {
     public void disable_time_Trip() {
         
             //get the commands data 
-            int tt_exp_data = h_MsGetComData(0x31EA, (byte*)(0));
-            int tt_mp_cost = h_MsGetComData(0x31EA, (byte*)(0));
+            int tt_exp_data = _MsGetComData.fnptr!(0x31EA, (byte*)(0));
+            int tt_mp_cost = _MsGetComData.fnptr!(0x31EA, (byte*)(0));
 
             //set its com_dark_flag to true - this makes it drain HP instead of MP
             *(int*)(tt_exp_data + 0x14) |= (1 << 28);
@@ -269,24 +232,12 @@ public unsafe partial class ATBRecoveryModule : FhModule {
     public override bool init(FhModContext mod_context, FileStream global_state_file) {
         return FFX2.FhCall.MsATBgetRestTime.hook(this, h_MsATBgetRestTime)
         && FFX2.FhCall.MsCommandComplete.hook(this, h_MsCommandComplete)
-        && FFX2.FhCall.MsGetChr.hook(this, h_MsGetChr)
-        && _MsGetComData.hook(this, h_MsGetComData)
-        && FhCall.MsCheckRange.hook(this, h_MsCheckRange)
+        //&& _MsGetComData.hook(this, h_MsGetComData)
         // additonal hooks
         && FFX2.FhCall.MsATBgetThinkingTime.hook(this, h_MsATBgetThinkingTime)
         //&& FFX2.FhCall.TOBtlDrawATBGaude.hook(this, h_TOBtlDrawATBGaude)
         // status handling hooks
-        && FFX2.FhCall.MsStatusProcess.hook(this, h_MsStatusProcess)
-        && FFX2.FhCall.MsStatCheckStop.hook(this, h_MsStatCheckStop)
-        && FFX2.FhCall.MsATBActiveCheck.hook(this, h_MsATBActiveCheck)
-        && FFX2.FhCall.MsCheckStatCount.hook(this, h_MsCheckStatCount)
-        && FFX2.FhCall.FUN_00636690.hook(this, h_FUN_00636690)
-        && FFX2.FhCall.MsStructClear.hook(this, h_MsStructClear)
-        && FFX2.FhCall.MsDamageBufferExe.hook(this, h_MsDamageBufferExe)
-        && FFX2.FhCall.MsSetStatus.hook(this, h_MsSetStatus)
-        && FFX2.FhCall.MsSetChrWeak.hook(this, h_MsSetChrWeak)
-        && FFX2.FhCall.MsStatusEffectCheck.hook(this, h_MsStatusEffectCheck)
-        && FFX2.FhCall.MsMotionRecoverExe.hook(this, h_MsMotionRecoverExe);
+        && FFX2.FhCall.MsStatusProcess.hook(this, h_MsStatusProcess);
     }
 
     public override void load_local_state(FileStream? local_state_file, FhLocalStateInfo local_state_info) { }

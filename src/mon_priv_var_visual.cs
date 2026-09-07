@@ -1,6 +1,4 @@
-﻿using Fahrenheit.Atel;
-
-namespace Fahrenheit.Mods.NewDawn;
+﻿namespace Fahrenheit.Mods.NewDawn;
 
 [FhLoad(FhGameId.FFX2)]
 public partial class MonPrivVarsModule : FhModule
@@ -26,10 +24,7 @@ public partial class MonPrivVarsModule : FhModule
     public static FhMethodHandle<d_TOMkpStdWindowXYWH> TOMkpStdWindowXYWH =>
         new(new FhMethodLocation("FFX-2.exe", 0x3b1a00));
 
-    
-
     public MonPrivVarsModule() { }
-
 
     // p1 being a basic worker address is uncertain. 
     // for X-2's Magus sister fight, with 0, 4, 0 get's Mindy's counter. Sandy's is 32 bytes after, and Cindy's is 32 bytes after that.
@@ -55,7 +50,7 @@ public partial class MonPrivVarsModule : FhModule
 
             int p2_unmasked = (int)uVar1;
 
-            int target_address = h_FUN_0072e730(p1_final, p2_unmasked & 0xffffff);
+            int target_address = FUN_0072e730.fnptr!(p1_final, p2_unmasked & 0xffffff);
 
             uint uVar4 = *(ushort*)(iVar3 + 4 + var_num * 8);
             // some_idx = ((int)some_idx < 0) - 1 & some_idx;
@@ -90,48 +85,8 @@ public partial class MonPrivVarsModule : FhModule
 
     }
 
-    public unsafe Chr* h_MsGetChr(uint chr_id)
-    {
-        return FFX2.FhCall.MsGetChr.chain_from(h_MsGetChr).fnptr!(chr_id);
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="work"></param>
-    /// <param name="priv_var_number"></param>
-    /// <param name="param_3"></param>
-    /// <returns>Address where the priv var is stored. </returns>
-    public unsafe int h_FUN_0072e730(int param_1, int param_2)
-    {
-        return FUN_0072e730.chain_from(h_FUN_0072e730).fnptr!(param_1, param_2);
-    }
-
-    public void h_TOMkpStdWindowXYWH(int param_1, int param_2, int param_3, int param_4, int param_5)
-    {
-
-        //_logger.Info("Param_1 is: " + param_1.ToString()); // x position
-        //_logger.Info("Param_2 is: " + param_2.ToString()); // y position
-        //_logger.Info("Param_3 is: " + param_3.ToString()); // 
-        //_logger.Info("Param_4 is: " + param_4.ToString()); // 
-        //_logger.Info("Param_5 is: " + param_5.ToString()); // 
-
-        TOMkpStdWindowXYWH.chain_from(h_TOMkpStdWindowXYWH).fnptr!(param_1, param_2, param_3, param_4, param_5);
-    }
-
-    public unsafe int* h_TOAdpATBGauge(int* _ppkt, int param_1, int param_2, int param_3, float param_4, float param_5, uint param_6)
-    {
-        return TOAdpATBGauge.chain_from(h_TOAdpATBGauge).fnptr!(_ppkt, param_1, param_2, param_3, param_4, param_5, param_6);
-    }
-
     public unsafe void h_TOMkpATBGauge(int chr_id, int x, int y, float fill, float length, uint status)
     {
-        //_logger.Info("Param_1 is: " + param_1.ToString()); // chr_id
-        //_logger.Info("Param_2 is: " + param_2.ToString()); // seems to be position
-        //_logger.Info("Param_3 is: " + param_3.ToString()); // seems to be position
-        //_logger.Info("Param_4 is: " + param_4.ToString()); // fill
-        //_logger.Info("Param_5 is: " + param_5.ToString()); // length
-        //_logger.Info("Param_6 is: " + param_6.ToString()); // status: 5 fill, 256 full, 258 full+haste
 
         /*
         if (chr_id < 0xf)
@@ -160,12 +115,13 @@ public partial class MonPrivVarsModule : FhModule
         if (btl_chr_pointer != 0)
         {
 
-            int enemy1_chr_base = (int)h_MsGetChr(0xf);
+            int enemy1_chr_base = (int)FFX2.FhCall.MsGetChr.fnptr!(0xf);
             int enemy1_title_x = *(int*)(enemy1_chr_base + 0x17b4);
             int enemy1_title_x_offset = 0;
             int enemy1_title_y = *(int*)(enemy1_chr_base + 0x17b8);
             int enemy1_title_y_offset = 0;
-            int enemy1_count = 0;
+            float enemy1_count = 0;
+            
 
             uint gauge_status = 3;
 
@@ -175,7 +131,7 @@ public partial class MonPrivVarsModule : FhModule
             {
                 case "ikai09_227":
                     int anima_oblivion_counter_address = GenericPrivVarGetter(0, 2, 0);
-                    //priv000c
+                    
                     enemy1_count = *(int*)anima_oblivion_counter_address;
                     enemy1_title_x_offset = -35;
                     draw_od_gauge = true;
@@ -183,14 +139,14 @@ public partial class MonPrivVarsModule : FhModule
 
                 case "klyt11_229":
                     int ifrit_counter_address = GenericPrivVarGetter(0, 2, 0);
-                    //priv000c
+                    
                     enemy1_count = *(int*)ifrit_counter_address;
                     enemy1_title_x_offset = -30;
                     draw_od_gauge = true;
                     break;
                 case "bsyt05_229":
                     int valefor_counter_address = GenericPrivVarGetter(0, 2, 0);
-                    //priv000c
+                    
                     enemy1_count = *(int*)valefor_counter_address;
                     enemy1_title_x_offset = -25;
                     enemy1_title_y_offset = 150;
@@ -198,22 +154,37 @@ public partial class MonPrivVarsModule : FhModule
                     break;
                 case "nagi05_229":
                     int yojimbo_counter_address = GenericPrivVarGetter(0, 3, 0);
-                    //priv000c
+                    
                     enemy1_count = *(int*)yojimbo_counter_address;
                     enemy1_title_x_offset = -50;
                     draw_od_gauge = true;
                     break;
+                case "djyt06_225":
+                    int experiment_counter_address = GenericPrivVarGetter(0, 5, 0);
+
+                    // Experiment's action counter goes from 0 to 6. On 6, does Annihilator, (increments, then chooses action)
+                    enemy1_count = *(int*)experiment_counter_address;
+                    if (enemy1_count == 6)
+                    {
+                        enemy1_count = 0;
+                    }
+                    enemy1_count = enemy1_count * 20;
+                    
+                    enemy1_title_x_offset = -40;
+                    draw_od_gauge = true;
+                    break;
             }
 
-            if (enemy1_count >= 100)
+            if (enemy1_count >= 100.0f)
             {
-                enemy1_count = 100;
+                enemy1_count = 100.0f;
                 gauge_status = gauge_status + 256;
             }
 
             if (draw_od_gauge)
             {
-                TOMkpATBGauge.chain_from(h_TOMkpATBGauge).fnptr!(0xf, enemy1_title_x + enemy1_title_x_offset, enemy1_title_y + enemy1_title_y_offset, (float)enemy1_count, 100.0f, gauge_status);
+                //arg5 must be 100.0f for the gauge to be the correct length
+                TOMkpATBGauge.chain_from(h_TOMkpATBGauge).fnptr!(0xf, enemy1_title_x + enemy1_title_x_offset, enemy1_title_y + enemy1_title_y_offset, enemy1_count, 100.0f, gauge_status);
             }
             
         }
@@ -221,28 +192,23 @@ public partial class MonPrivVarsModule : FhModule
     }
         
 
-        
-
     private string addr_string = "Address Here";
     private bool get_addr = false;
 
-    private uint wkr_address = 0xDEADBEEF;
+    private uint wkr_address = 0x0;
     private uint var_num = 0;
     private uint some_idx = 0;
-
     public unsafe override void render_imgui()
     {
         int btl_chr_pointer = FhUtil.get_at<int>(0xa0fbac);
 
         if (btl_chr_pointer != 0) {
 
-            ImGui.Begin("726cd0 Tester");
+            ImGui.Begin("726cd0 Tester", ImGuiWindowFlags.NoFocusOnAppearing);
 
             //string oblivion_count = "0";
             int* p1_as_ptr = FhUtil.ptr_at<int>((0xa115a0));
             int p1_as_int = FhUtil.get_at<int>(0xa115a0);
-
-
 
             unsafe
             {
@@ -291,15 +257,12 @@ public partial class MonPrivVarsModule : FhModule
                         ImGuiInputTextFlags.CharsHexadecimal);
                 }
 
-
                 if (ImGui.Button("CustomVarGetterTest"))
                 {
                     addr_string = GenericPrivVarGetter((int)wkr_address, (int)var_num, (int)some_idx).ToString("X");
                 }
 
             }
-
-            
 
             ImGui.Text(addr_string);
             ImGui.End();
@@ -308,14 +271,10 @@ public partial class MonPrivVarsModule : FhModule
             
     }
 
-
-    public unsafe override bool init(FhModContext mod_context, FileStream global_state_file)
+    public override bool init(FhModContext mod_context, FileStream global_state_file)
     {
 
-        return FUN_0072e730.hook(this, h_FUN_0072e730)
-            && FFX2.FhCall.MsGetChr.hook(this, h_MsGetChr)
-            && TOMkpATBGauge.hook(this, h_TOMkpATBGauge)
-            && TOMkpStdWindowXYWH.hook(this, h_TOMkpStdWindowXYWH);
+        return TOMkpATBGauge.hook(this, h_TOMkpATBGauge);
             
     }
 

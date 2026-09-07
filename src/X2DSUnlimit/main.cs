@@ -64,17 +64,6 @@ public partial class X2DSUnlimitModule : FhModule {
     /// TOMsJobAbilityWindow+ and other functions (many)
     /// </summary>
     ///
-    /* Superseded, reworked, using native allocation, simplified, skipping table lookup step
-    private static readonly ushort[] CustomTOMenuStartJobAbilityWindow_DS_Table =
-{
-    0x5000, 0x5001, 0x5002, 0x5003, 0x5004,
-    0x5005, 0x5006, 0x5007, 0x5008, 0x5009,
-    0x500A, 0x500B, 0x500C, 0x500D, 0x500E,
-    0x5018, 0x5019, 0x501a, 0x501b, 0x501d,
-    0x501e, 0x501f, 0x501c, 0x500f, 0x5010,
-    0x5011, 0x5012, 0x5013, 0x5014, 0x5015,
-    0x5016, 0x5017, 0x5020, 0x5021
-};*/
 
     //replaces lookup table at: ffx-2.exe + cc36cc, used by the kyGetJobNum series of functions and kyGetUsedPoint ONLY?.
     private static readonly ushort[] CustomDsLookupTable =
@@ -100,65 +89,11 @@ public partial class X2DSUnlimitModule : FhModule {
         ability_list_data_ptr = (DSAbilityListData*)NativeMemory.AllocZeroed((nuint)(sizeof(DSAbilityListData) * ability_list_count));
     }
 
-    public unsafe Chr* h_MsGetChr(uint chr_id) {
-        return FFX2.FhCall.MsGetChr.chain_from(h_MsGetChr).fnptr!(chr_id);
-    }
-
-    public uint h_MsGetSaveJob(uint chr_id) {
-        return FFX2.FhCall.MsGetSaveJob.chain_from(h_MsGetSaveJob).fnptr!(chr_id);
-    }
-    public uint h_MsBtlPlayerSaveNumCheck(uint chr_id)
+    /*
+    public unsafe int h_MsGetComData(uint id, byte* out_data_end)
     {
-        return FFX2.FhCall.MsBtlPlayerSaveNumCheck.chain_from(h_MsBtlPlayerSaveNumCheck).fnptr!(chr_id);
-    }
-
-    // table this references has entries for 0x5020 and 0x5021 for FL/LG - would need to expand for more dresspheres
-    public uint h_MsGetJobNumBasic(uint p1)
-    {
-        return FFX2.FhCall.MsGetJobNumBasic.chain_from(h_MsGetJobNumBasic).fnptr!(p1);
-    }
-
-    public uint h_MsGetSaveAp(uint chr_id, uint ability_id)
-    {
-        return FFX2.FhCall.MsGetSaveAp.chain_from(h_MsGetSaveAp).fnptr!(chr_id, ability_id);
-    }
-
-    public uint h_MsGetSaveNeedAp(uint chr_id, uint ability_id)
-    {
-        return FFX2.FhCall.MsGetSaveNeedAp.chain_from(h_MsGetSaveNeedAp).fnptr!(chr_id, ability_id);
-    }
-
-    public uint h_MsGetSaveCommand(uint p1, uint p2) {
-        return FFX2.FhCall.MsGetSaveCommand.chain_from(h_MsGetSaveCommand).fnptr!(p1, p2);
-    }
-
-    public uint h_MsCheckLearnCommand(uint chr_id, int ability_id) {
-        return FFX2.FhCall.MsCheckLearnCommand.chain_from(h_MsCheckLearnCommand).fnptr!(chr_id, ability_id);
-    }
-
-    public uint h_FUN_6294f0(uint p1, int p2, int p3) {
-        return FFX2.FhCall.FUN_006294f0.chain_from(h_FUN_6294f0).fnptr!(p1, p2, p3);
-    }
-
-    public uint h_MsCheckAbility(uint p1, int p2, int p3) {
-        return FFX2.FhCall.MsCheckAbility.chain_from(h_MsCheckAbility).fnptr!(p1, p2, p3);
-    }
-
-    public uint h_MsBtlMonsterSaveNumCheck(uint param_1) {
-        return FFX2.FhCall.MsBtlMonsterSaveNumCheck.chain_from(h_MsBtlMonsterSaveNumCheck).fnptr!(param_1);
-    }
-
-    public unsafe  int h_MsGetComData(uint id, byte* out_data_end) {
         return _MsGetComData.chain_from(h_MsGetComData).fnptr!(id, out_data_end);
-    }
-
-    public uint h_MsCalcChrLevel(uint chr_id) {
-        return FFX2.FhCall.MsCalcChrLevel.chain_from(h_MsCalcChrLevel).fnptr!(chr_id);
-    }
-
-    public uint h_MsGetChrNum(uint param_1) {
-        return FFX2.FhCall.MsGetChrNum.chain_from(h_MsGetChrNum).fnptr!(param_1);
-    }
+    }*/
 
     // handle FL/LG getting ability to be learned
     public unsafe uint h_MsGetSaveLearn(uint chr_id, uint job_id)
@@ -167,11 +102,11 @@ public partial class X2DSUnlimitModule : FhModule {
         uint chr_num;
         int is_plyChr;
 
-        chr_num = h_MsGetChrNum(chr_id);
-        is_plyChr = (int)h_MsBtlPlayerSaveNumCheck((byte)chr_num);
+        chr_num = FFX2.FhCall.MsGetChrNum.fnptr!(chr_id);
+        is_plyChr = (int)FFX2.FhCall.MsBtlPlayerSaveNumCheck.fnptr!((byte)chr_num);
         if (is_plyChr != 0)
         {
-            uint job_num = h_MsGetJobNumBasic(job_id);
+            uint job_num = FFX2.FhCall.MsGetJobNumBasic.fnptr!(job_id);
             if (job_num < 0x1e) // Vanilla
             {
                 ushort* DAT_00e05de0 = FhUtil.ptr_at<ushort>(0xa05de0);
@@ -215,11 +150,11 @@ public partial class X2DSUnlimitModule : FhModule {
         uint chr_num;
         int is_plyChr;
 
-        chr_num = h_MsGetChrNum(chr_id);
-        is_plyChr = (int)h_MsBtlPlayerSaveNumCheck((byte)chr_num);
+        chr_num = FFX2.FhCall.MsGetChrNum.fnptr!(chr_id);
+        is_plyChr = (int)FFX2.FhCall.MsBtlPlayerSaveNumCheck.fnptr!((byte)chr_num);
         if (is_plyChr != 0)
         {
-            uint job_num = h_MsGetJobNumBasic(job_id);
+            uint job_num = FFX2.FhCall.MsGetJobNumBasic.fnptr!(job_id);
             if (job_num< 0x1e) // vanilla
             {
                 ushort* DAT_00e05de0 = FhUtil.ptr_at<ushort>(0xa05de0);
@@ -261,12 +196,6 @@ public partial class X2DSUnlimitModule : FhModule {
         }
         return 0;
     }
-
-    public int h_MsCheckRange(int number, int lower_bound, int upper_bound)
-    {
-        return FhCall.MsCheckRange.chain_from(h_MsCheckRange).fnptr!(number, lower_bound, upper_bound);
-    }
-
 
     /// <summary>
     /// Adds functionality with extra Job data for Rikku/Paine to allow for different stats/abilities
@@ -382,7 +311,7 @@ public partial class X2DSUnlimitModule : FhModule {
 
         if (ds_id < 0x1e) // Vanilla behaviour
         {
-            quantity = h_MsCheckRange(*(byte*)(DAT_00E00D1C + ds_id) + param_2, 0, 99);
+            quantity = FhCall.MsCheckRange.fnptr!(*(byte*)(DAT_00E00D1C + ds_id) + param_2, 0, 99);
             *(byte*)(DAT_00E00D1C + ds_id) = (byte)quantity;
             return quantity;
         }
@@ -396,18 +325,17 @@ public partial class X2DSUnlimitModule : FhModule {
         return FFX2.FhCall.FUN_006083B0.hook(this, h_FUN_6083B0)
             && FFX2.FhCall.MsGetRomJob.hook(this, h_MsGetRomJob)
             && FFX2.FhCall.MsAddSaveDreSphere.hook(this, h_MsAddSaveDreSphere)
-            && FhCall.MsCheckRange.hook(this, h_MsCheckRange)
             && FFX2.FhCall.MsGetSaveDreSphere.hook(this, h_MsGetSaveDreSphere)
             && FFX2.FhCall.kyGetCursorPoint.hook(this, h_kyGetCursorPoint)
             && FFX2.FhCall.kyIsUsedPoint.hook(this, h_kyIsUsedPoint)
-            && FFX2.FhCall.MsGetSaveConfigChangeEffect.hook(this, h_MsGetSaveConfigChangeEffect)
-            && FFX2.FhCall.MsGetRamConfigChangeEffect.hook(this, h_MsGetRamConfigChangeEffect)
+            //&& FFX2.FhCall.MsGetSaveConfigChangeEffect.hook(this, h_MsGetSaveConfigChangeEffect)
+            //&& FFX2.FhCall.MsGetRamConfigChangeEffect.hook(this, h_MsGetRamConfigChangeEffect)
             && FFX2.FhCall.MsGetSaveDressUpCount.hook(this, h_MsGetSaveDressUpCount)
             && FFX2.FhCall.kyGetJobNum.hook(this, h_kyGetJobNum)
             && FFX2.FhCall.kyGetJobNum3.hook(this, h_kyGetJobNum3)
             && FFX2.FhCall.TOMenuMakeJobList.hook(this, h_TOMenuMakeJobList)
             && FFX2.FhCall.TODVDFileReadNonBlock.hook(this, h_TODVDFileReadNonBlock)
-            && FFX2.FhCall.MsGetSavePlate.hook(this, h_MsGetSavePlate)
+            //&& FFX2.FhCall.MsGetSavePlate.hook(this, h_MsGetSavePlate)
             && FFX2.FhCall.kyGetUsedPoint.hook(this, h_kyGetUsedPoint)
             && FFX2.FhCall.kyAddPoint3D.hook(this, h_kyAddPoint3D)
             && FFX2.FhCall.MsGetJobAbilityList.hook(this, h_MsGetJobAbilityList)
@@ -416,30 +344,17 @@ public partial class X2DSUnlimitModule : FhModule {
             && FFX2.FhCall.MsGetSaveLearn.hook(this, h_MsGetSaveLearn)
             && FFX2.FhCall.MsSetSaveLearn.hook(this, h_MsSetSaveLearn)
 
-            && FFX2.FhCall.MsGetChrNum.hook(this, h_MsGetChrNum)
-            && FFX2.FhCall.MsCalcChrLevel.hook(this, h_MsCalcChrLevel)
-            && _MsGetComData.hook(this, h_MsGetComData)
-            && FFX2.FhCall.MsBtlMonsterSaveNumCheck.hook(this, h_MsBtlMonsterSaveNumCheck)
-            && FFX2.FhCall.MsCheckAbility.hook(this, h_MsCheckAbility)
-            && FFX2.FhCall.FUN_006294f0.hook(this, h_FUN_6294f0)
-            && FFX2.FhCall.MsCheckLearnCommand.hook(this, h_MsCheckLearnCommand)
-            && FFX2.FhCall.MsGetSaveCommand.hook(this, h_MsGetSaveCommand)
-            && FFX2.FhCall.MsGetSaveAp.hook(this, h_MsGetSaveAp)
-            && FFX2.FhCall.MsGetSaveNeedAp.hook(this, h_MsGetSaveNeedAp)
-            && FFX2.FhCall.MsGetJobNumBasic.hook(this, h_MsGetJobNumBasic)
-            && FFX2.FhCall.MsBtlPlayerSaveNumCheck.hook(this, h_MsBtlPlayerSaveNumCheck)
+            //&& _MsGetComData.hook(this, h_MsGetComData)
 
             && FFX2.FhCall.TOGetSaveJobName.hook(this, h_TOGetSaveJobName)
-            && FFX2.FhCall.MsGetSaveJob.hook(this, h_MsGetSaveJob)
             && FFX2.FhCall.kySetHelpJob2.hook(this, h_kySetHelpJob2)
-            && FFX2.FhCall.TOMenuSetHelpMes.hook(this, h_TOMenuSetHelpMes)
+            //&& FFX2.FhCall.TOMenuSetHelpMes.hook(this, h_TOMenuSetHelpMes)
 
             && FFX2.FhCall.MsGetChrID.hook(this, h_MsGetChrID)
             && FFX2.FhCall.MsSetRamMotionChrData.hook(this, h_MsSetRamMotionChrData)
-            && FFX2.FhCall.MsGetChr.hook(this, h_MsGetChr)
             && FFX2.FhCall.FUN_0062AB30.hook(this, h_FUN_62AB30)
             && FFX2.FhCall.FUN_00534A70.hook(this, h_FUN_534A70)
-            && FFX2.FhCall.MsGetSaveChrName.hook(this, h_MsGetSaveChrName)
+            //&& FFX2.FhCall.MsGetSaveChrName.hook(this, h_MsGetSaveChrName)
 
             && FFX2.FhCall.TOGetFaceIndex2.hook(this, h_TOGetFaceIndex2)
 
@@ -459,17 +374,7 @@ public partial class X2DSUnlimitModule : FhModule {
             && FFX2.FhCall.FUN_778160.hook(this, h_FUN_778160)
             && FFX2.FhCall.FUN_776EC0.hook(this, h_FUN_776EC0)
             && FFX2.FhCall.FUN_777270.hook(this, h_FUN_777270)
-            && FFX2.FhCall.TOMenuSetSaveLearn.hook(this, h_TOMenuSetSaveLearn)
-            && FFX2.FhCall.TOMenuSetMacroCommandType.hook(this, h_TOMenuSetMacroCommandType)
-            && FFX2.FhCall.TOBtlGetComName.hook(this, h_TOBtlGetComName)
-            && FFX2.FhCall.TOMenuSetMacroCommandValue.hook(this, h_TOMenuSetMacroCommandValue)
-            && FFX2.FhCall.TOGetMenuText.hook(this, h_TOGetMenuText)
-            && FFX2.FhCall.SndSepPlaySimple.hook(this, h_SndSepPlaySimple)
-
-            //&& FFX2.FhCall.FFX2_Set_UI_Scale.hook(this, h_FFX2_Set_UI_Scale)
-            && FFX2.FhCall.TkMenuGetTimer.hook(this, h_TkMenuGetTimer)
-            && FFX2.FhCall.offsetAdjust_Y.hook(this, h_offsetAdjust_Y)
-            && FFX2.FhCall.TOMkpShape2dMenu.hook(this ,h_TOMkpShape2dMenu);
+            && FFX2.FhCall.TOMenuSetSaveLearn.hook(this, h_TOMenuSetSaveLearn);
     }
 
     public override void load_local_state(FileStream? local_state_file, FhLocalStateInfo local_state_info)

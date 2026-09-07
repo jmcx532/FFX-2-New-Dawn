@@ -12,7 +12,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
     const uint TURNS_TO_SHOW = 16;
     
     int ReadATBValue(uint chr_id) {
-        Chr* chr = h_MsGetChr(chr_id);
+        Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
         int chr_base_addr = (int)chr;
         int atb_remaining = *(int*)(chr_base_addr + ATB_REMAIN_OFFSET);
 
@@ -62,7 +62,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
             SimBattleUnit chr = new SimBattleUnit();
             chr.chr_id = i;
 
-            Chr* chr_struct = h_MsGetChr((uint)i);
+            Chr* chr_struct = FFX2.FhCall.MsGetChr.fnptr!((uint)i);
             chr.base_addr = (int)chr_struct;
 
             chr.mon_id = *(ushort*)(chr.base_addr + 0xe);
@@ -129,7 +129,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
                 BattleUnits[t].isTargeted = IsTargeted((uint)BattleUnits[t].chr_id);
             }
 
-            int cmd_base = h_MsGetComData(hovered_command, (byte*)0);
+            int cmd_base = _MsGetComData.fnptr!(hovered_command, (byte*)0);
 
             uint com_dmg_data = *(uint*)(cmd_base + 0x1c);                  // get damage flags
             bool comHealsStatuses = ((com_dmg_data >> 5) & 1) != 0;
@@ -228,7 +228,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
             return 0; 
         }
 
-        int cmd_base_address = h_MsGetComData(command_id, (byte*)(0));
+        int cmd_base_address = _MsGetComData.fnptr!(command_id, (byte*)(0));
         int cmd_recovery_time = (int)(*(ushort*)(cmd_base_address + 0x22) * 10000);
         byte agility = (*(byte*)(BattleUnit.base_addr + 0x39a));
 
@@ -244,7 +244,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
         }
         uint agility_divisor = (uint)Math.Round(divisor);
 
-        recovery_time = h_MsCheckRange((int)((cmd_recovery_time / agility_divisor)), 0, 99999);
+        recovery_time = FhCall.MsCheckRange.fnptr!((int)((cmd_recovery_time / agility_divisor)), 0, 99999);
 
         if (BattleUnit.hasHaste){ recovery_time = recovery_time / 2; }
         if (BattleUnit.hasSlow) { recovery_time = recovery_time * 2; }
@@ -349,7 +349,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
 
     //function to read character's name string, stored in BattleUnit - keep for debugging
     public unsafe string ReadChrName(uint chr_id) {
-        Chr* chr = h_MsGetChr(chr_id);
+        Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
         int chr_base_addr = (int)chr;
         //pointer to start of Chr name string
         byte* p = (byte*)(chr_base_addr + 0x358);

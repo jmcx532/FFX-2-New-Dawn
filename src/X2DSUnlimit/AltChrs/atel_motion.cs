@@ -13,18 +13,13 @@ public class AtelMotionModule : FhModule {
     public FhMethodHandle<d_MsSetRamChrData> MsSetRamChrData
         => new(new FhMethodLocation("FFX-2.exe", 0x226f40));
 
-    public unsafe Chr* h_MsGetChr(uint chr_id)
-    {
-        return FFX2.FhCall.MsGetChr.chain_from(h_MsGetChr).fnptr!(chr_id);
-    }
-
     public unsafe void h_MsSetRamChrData()
     {
         MsSetRamChrData.chain_from(h_MsSetRamChrData).fnptr!();
         // Disable head movement when targeting for new dresspheres
         for (uint i = 0; i < 3; i++)
         {
-            uint chr_addr = (uint)h_MsGetChr(i);
+            uint chr_addr = (uint)FFX2.FhCall.MsGetChr.fnptr!(i);
             ushort current_dressphere = *(ushort*)(chr_addr + 0x86a);
 
             if (current_dressphere > 0x501f)
@@ -78,7 +73,7 @@ public class AtelMotionModule : FhModule {
             uint chr_id = actor.chr_id;
             if (chr_id < 3 && chr_enabled == 1)
             {
-                uint chr_base = (uint)h_MsGetChr(chr_id);
+                uint chr_base = (uint)FFX2.FhCall.MsGetChr.fnptr!(chr_id);
                 ushort current_dressphere = *(ushort*)(chr_base + 0x86a);
 
                 if (current_dressphere == 0x5020)
@@ -121,20 +116,16 @@ public class AtelMotionModule : FhModule {
         
     }
 
-
-
-
     public unsafe override bool init(FhModContext mod_context, FileStream global_state_file)
     {
         return Ch_GetSysMotionID.hook(this, h_Ch_GetSysMotionID)
-            && FFX2.FhCall.MsGetChr.hook(this, h_MsGetChr)
             && MsSetRamChrData.hook(this, h_MsSetRamChrData);
     }
 
     public override void render_imgui()
     {
 
-        ImGui.Begin("Ch_Motion logging");
+        ImGui.Begin("Ch_Motion logging", ImGuiWindowFlags.NoFocusOnAppearing);
 
         string label1 = MotionLoggingEnabled ? "Dbg Motion Logging: ON" : "Dbg Motion Logging: OFF";
         if (ImGui.Button(label1))

@@ -75,7 +75,7 @@ public partial class X2DSUnlimitModule : FhModule {
         FFX2.FhCall.TOCtrlATBChr.chain_from(h_TOCtrlATBChr).fnptr!();
 
         byte chr_window_open = FhUtil.get_at<byte>(0xdb747c);
-        Chr* chr = h_MsGetChr(chr_window_open);
+        Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_window_open);
         int chr_base = (int)chr;
 
         ushort dressphere = *(ushort*)(chr_base + 0x86e);
@@ -88,7 +88,7 @@ public partial class X2DSUnlimitModule : FhModule {
     // Usage: Play relevant character's SFX instead of YRP's
     public unsafe uint h_FUN_62AB30(uint chr_id, uint sound_id) {
         uint original_result = FFX2.FhCall.FUN_0062AB30.chain_from(h_FUN_62AB30).fnptr!(chr_id, sound_id);
-        Chr* chr = h_MsGetChr(chr_id);
+        Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
         int chr_base_addr = (int)chr;
         int chr_model = *(int*)(chr_base_addr + 4);
 
@@ -131,9 +131,9 @@ public partial class X2DSUnlimitModule : FhModule {
     /// <param name="param_9"></param> //pointer to start of VoiceIDMapper.txt
     public unsafe void h_FUN_534A70(int* param_1, int voice_integer, int param_3, int param_4,/*FMODCHANNELINDEX*/ int param_5, int param_6, int* param_7, int* param_8, int* param_9) {
         
-        Chr* y_chr = h_MsGetChr(0);
-        Chr* r_chr = h_MsGetChr(1);
-        Chr* p_chr = h_MsGetChr(2);
+        Chr* y_chr = FFX2.FhCall.MsGetChr.fnptr!(0);
+        Chr* r_chr = FFX2.FhCall.MsGetChr.fnptr!(1);
+        Chr* p_chr = FFX2.FhCall.MsGetChr.fnptr!(2);
 
         int y_base_addr = (int)y_chr;
         int r_base_addr = (int)r_chr;

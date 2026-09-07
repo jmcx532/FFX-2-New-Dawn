@@ -66,19 +66,4 @@ public partial class X2DSUnlimitModule : FhModule
         */
     }
 
-    // read config dressphere animations setting
-    public uint h_MsGetSaveConfigChangeEffect()
-    {
-        uint original_result = FFX2.FhCall.MsGetSaveConfigChangeEffect.chain_from(h_MsGetSaveConfigChangeEffect).fnptr!();
-        //_logger.Info("Return result is: " + original_result.ToString());
-        return original_result;
-    }
-    // read config dressphere animations setting
-    public int h_MsGetRamConfigChangeEffect()
-    {
-        int original_result = FFX2.FhCall.MsGetRamConfigChangeEffect.chain_from(h_MsGetRamConfigChangeEffect).fnptr!();
-        //_logger.Info("Return result is: " + original_result.ToString());
-        return original_result;
-    }
-
 }

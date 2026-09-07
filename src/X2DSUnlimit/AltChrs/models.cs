@@ -13,7 +13,7 @@ public partial class X2DSUnlimitModule : FhModule {
         uint original_result = FFX2.FhCall.MsGetChrID.chain_from(h_MsGetChrID).fnptr!(chr_id);
 
         //get character battle info address, record original model
-        Chr* chr = h_MsGetChr(chr_id);
+        Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
         int chr_base_addr = (int)chr;
         int original_model = *(int*)(chr_base_addr + 4);
         ushort* party_ds_record_base = FhUtil.ptr_at<ushort>(0xa016f6);

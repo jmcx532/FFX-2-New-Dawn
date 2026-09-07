@@ -7,22 +7,11 @@ public class TurnBasedModule : FhModule {
 
     public TurnBasedModule() { }
 
-    /*this function gets the base address of a characters Battle data section
-     * If it's parameter is less than 31 it returns a characters BattleData base address
-     *If it's passed with a parameter greater than 155 it does end of battle cleanup I noticed from logging before
-     * Chr ids: Y: 0, R: 2, P: 3 -- enemies from 15 onward
-     */
-    public unsafe Chr* h_MsGetChr(uint chr_id)
-    {
-        return FFX2.FhCall.MsGetChr.chain_from(h_MsGetChr).fnptr!(chr_id);
-    }
-
-
     public unsafe int h_MsSetATBwait(sbyte target_value) {
 
         //wait loop - counterattack handling
         for (uint i = 0; i < 31; i++) {
-            Chr* chr = h_MsGetChr(i);
+            Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(i);
             int chr_base = (int)chr;
             byte is_countering = *(byte*)(chr_base + 0xe6c);
             
@@ -54,8 +43,7 @@ public class TurnBasedModule : FhModule {
     }
 
     public unsafe override bool init(FhModContext mod_context, FileStream global_state_file) {
-        return FFX2.FhCall.MsSetATBwait.hook(this, h_MsSetATBwait) 
-            && FFX2.FhCall.MsGetChr.hook(this, h_MsGetChr);
+        return FFX2.FhCall.MsSetATBwait.hook(this, h_MsSetATBwait);
     }
 
     public override void load_local_state(FileStream? local_state_file, FhLocalStateInfo local_state_info) { }

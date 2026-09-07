@@ -1,6 +1,4 @@
-﻿using static Fahrenheit.Mods.FFX2NewDawn.APSystemModule;
-
-namespace Fahrenheit.Mods.X2DSUnlimit;
+﻿namespace Fahrenheit.Mods.X2DSUnlimit;
 
 public partial class X2DSUnlimitModule : FhModule {
 
@@ -33,51 +31,6 @@ public partial class X2DSUnlimitModule : FhModule {
         [FieldOffset(0x08)] public int percentage;
         [FieldOffset(0x0C)] public int i1;
         [FieldOffset(0x10)] public DSAbilityListDataAbilityArray Abilities;
-    }
-
-
-    public void h_TOMenuSetMacroCommandType(int param_1, int param_2, byte param_3) {
-        FFX2.FhCall.TOMenuSetMacroCommandType.chain_from(h_TOMenuSetMacroCommandType).fnptr!(param_1, param_2, param_3);
-        return;
-    }
-
-    public unsafe byte* h_TOBtlGetComName(uint param_1) {
-        return FFX2.FhCall.TOBtlGetComName.chain_from(h_TOBtlGetComName).fnptr!(param_1);
-    }
-
-    public unsafe void h_TOMenuSetMacroCommandValue(int param_1, int param_2, byte* param_3) {
-        FFX2.FhCall.TOMenuSetMacroCommandValue.chain_from(h_TOMenuSetMacroCommandValue).fnptr!(param_1, param_2, param_3);
-        return;
-    }
-
-    public unsafe byte* h_TOGetMenuText(uint param_1) {
-        return FFX2.FhCall.TOGetMenuText.chain_from(h_TOGetMenuText).fnptr!(param_1);
-    }
-
-    public uint h_SndSepPlaySimple(uint param_1) {
-        return FFX2.FhCall.SndSepPlaySimple.chain_from(h_SndSepPlaySimple).fnptr!(param_1);
-    }
-
-    /*
-    public void h_FFX2_Set_UI_Scale(float param_1, float param_2)
-    {
-        FFX2.FhCall.FFX2_Set_UI_Scale.chain_from(h_FFX2_Set_UI_Scale).fnptr!(param_1, param_2);
-    }*/
-
-    public byte h_TkMenuGetTimer()
-    {
-        return FFX2.FhCall.TkMenuGetTimer.chain_from(h_TkMenuGetTimer).fnptr!();
-    }
-
-    public float h_offsetAdjust_Y(int param_1)
-    {
-        return FFX2.FhCall.offsetAdjust_Y.chain_from(h_offsetAdjust_Y).fnptr!(param_1);
-    }
-
-    
-    public void h_TOMkpShape2dMenu(int arg1, int arg2, int arg3, int arg4)
-    {
-        FFX2.FhCall.TOMkpShape2dMenu.chain_from(h_TOMkpShape2dMenu).fnptr!(arg1, arg2, arg3, arg4);
     }
 
     /// <summary>
@@ -322,8 +275,8 @@ public partial class X2DSUnlimitModule : FhModule {
             ability.is_selected = 0;
             ability.ability_id = ability_id; // read from Job, put in Ability List data
 
-            uint current_ap = h_MsGetSaveAp(chr_id, (uint)ability_id);
-            uint needed_ap = h_MsGetSaveNeedAp((byte)chr_id, (uint)ability_id);
+            uint current_ap = FFX2.FhCall.MsGetSaveAp.fnptr!(chr_id, (uint)ability_id);
+            uint needed_ap = FFX2.FhCall.MsGetSaveNeedAp.fnptr!((byte)chr_id, (uint)ability_id);
 
             ability.ap_current = current_ap;
             ability.ap_needed = needed_ap;
@@ -339,7 +292,7 @@ public partial class X2DSUnlimitModule : FhModule {
             ref DSAbilityListDataAbility ability = ref abi_list_table[job_num].Abilities[i];
 
             for (int j = 0; j < 16; j++) {
-                ushort candidate = *(ushort*)(learnable_list + j * 2);
+                ushort candidate = *(ushort*)((int)learnable_list + j * 2);
                 if (candidate == 0x00FF) continue;
 
                 // If match, Set ability visibility flag
@@ -363,7 +316,7 @@ public partial class X2DSUnlimitModule : FhModule {
 
             //if (0 < local_c) {
                 for (int j = 0; j < 16; j++) {
-                    ushort candidate = *(ushort*)(mastered_list + j * 2);
+                    ushort candidate = *(ushort*)((int)mastered_list + j * 2);
                     if (candidate == 0x00FF) continue;
 
                     if (ability.ability_id == candidate) {
@@ -440,15 +393,15 @@ public partial class X2DSUnlimitModule : FhModule {
         nint DAT_00df9258_addr = (nint)(DAT_00df9258);
         int abilities_checked = 0;
 
-        chr_num = h_MsGetChrNum((uint)chr_id);
-        chr_level = (uint)h_MsCalcChrLevel((byte)chr_num);
+        chr_num = FFX2.FhCall.MsGetChrNum.fnptr!((uint)chr_id);
+        chr_level = (uint)FFX2.FhCall.MsCalcChrLevel.fnptr!((byte)chr_num);
 
         job_addr = (int)h_MsGetRomJob(chr_num, (uint)job_id, null);
         if (job_addr != 0) // if Job address is returned
         {
 
             // Select:  Number of abilities to check differs between YRP and Creatures
-            is_monster = h_MsBtlMonsterSaveNumCheck(chr_num); // Check if Player character or Creature
+            is_monster = FFX2.FhCall.MsBtlMonsterSaveNumCheck.fnptr!(chr_num); // Check if Player character or Creature
             if (is_monster == 0)
             {
                 num_abilities_to_check = 0x10;
@@ -472,10 +425,10 @@ public partial class X2DSUnlimitModule : FhModule {
                     if (ability != 0)
                     {
                         // Checks
-                        iVar8 = (int)h_MsCheckAbility(chr_num, requirement, (int)chr_level); // does the character have the prereq
-                        iVar9 = (int)h_FUN_6294f0((uint)ability, (int)DAT_00df9258_addr, abilities_checked);// Excel/MsGetRomAbility related, not in Switch ver
-                        uVar10 = h_MsCheckLearnCommand((byte)chr_num, ability);
-                        iVar11 = (int)h_MsGetSaveCommand(chr_num, (uint)ability);
+                        iVar8 = (int)FFX2.FhCall.MsCheckAbility.fnptr!(chr_num, requirement, (int)chr_level); // does the character have the prereq
+                        iVar9 = (int)FFX2.FhCall.FUN_006294f0.fnptr!((uint)ability, (int)DAT_00df9258_addr, abilities_checked);// Excel/MsGetRomAbility related, not in Switch ver
+                        uVar10 = FFX2.FhCall.MsCheckLearnCommand.fnptr!((byte)chr_num, ability);
+                        iVar11 = (int)FFX2.FhCall.MsGetSaveCommand.fnptr!(chr_num, (uint)ability);
 
                         bool left_condition = is_monster != 0 || param_4 == 0 || requirement == 0 || iVar11 != 0;
                         bool right_condition = (iVar8 != 0 && iVar9 != 0) && (uVar10 != 0 && (abilities_checked < 0x10));
@@ -537,16 +490,16 @@ public partial class X2DSUnlimitModule : FhModule {
 
                 h_TOMenuSetSaveLearn((byte)menu_chr_id, menu_job_id, slot);
                 h_TOMenuMakeJobAbilityList(menu_chr_id, menu_job_id);
-                h_TOMenuSetMacroCommandType(0, 1, 0);
+                FFX2.FhCall.TOMenuSetMacroCommandType.fnptr!(0, 1, 0);
 
                 //DSAbilityListData* abi_list_data = FhUtil.ptr_at<DSAbilityListData>(0xdbb200);
                 DSAbilityListData* abi_list_data = ability_list_data_ptr;
                 int ability_id = abi_list_data[job_num].Abilities[(int)slot].ability_id;
 
-                byte* com_name_string_addr = h_TOBtlGetComName((uint)ability_id);
+                byte* com_name_string_addr = FFX2.FhCall.TOBtlGetComName.fnptr!((uint)ability_id);
 
-                h_TOMenuSetMacroCommandValue(0, 1, com_name_string_addr);
-                com_name_string_addr = h_TOGetMenuText(0x107a);
+                FFX2.FhCall.TOMenuSetMacroCommandValue.fnptr!(0, 1, com_name_string_addr);
+                com_name_string_addr = FFX2.FhCall.TOGetMenuText.fnptr!(0x107a);
                 *(byte**)(param_1 + 0x24) = com_name_string_addr;
                 *(uint*)(param_1 + 0x28) = 9; // Menu progression state record
                 return;
@@ -565,7 +518,7 @@ public partial class X2DSUnlimitModule : FhModule {
 
                 // Blue Bullet selected, handling
                 if (ability.ability_id == 0x300a) {
-                    h_SndSepPlaySimple(0x80000001);
+                    FFX2.FhCall.SndSepPlaySimple.fnptr!(0x80000001);
                     *(ushort*)(param_1 + 0x2c) = *(ushort*)(param_1 + 0x4c);
                     *(byte*)(param_1 + 0x48) = (byte)(*(byte*)(param_1 + 0x48) + 1);
                     *(uint*)(param_1 + 0x28) = 0xd;
@@ -574,13 +527,13 @@ public partial class X2DSUnlimitModule : FhModule {
 
                 // Ability not mastered handling
                 if (ability.is_mastered == 0) {
-                    h_SndSepPlaySimple(0x8000000a);
+                    FFX2.FhCall.SndSepPlaySimple.fnptr!(0x8000000a);
                     *(uint*)(param_1 + 0x80) = 1;
                     *(uint*)(param_1 + 0x28) = 7;
                     return;
                 }
 
-                h_SndSepPlaySimple(0x80000003);
+                FFX2.FhCall.SndSepPlaySimple.fnptr!(0x80000003);
                 *(uint*)(param_1 + 0x80) = 0;
                 *(uint*)(param_1 + 0x28) = 8;
                 return;
@@ -766,10 +719,10 @@ public partial class X2DSUnlimitModule : FhModule {
 
                     FhUtil.set_at<byte>(0x12f0ac0, 1);
 
-                    int timer_val = h_TkMenuGetTimer();
+                    int timer_val = FFX2.FhCall.TkMenuGetTimer.fnptr!();
 
                     double DAT_00cad890 = FhUtil.get_at<double>(0x8ad890);
-                    double val = h_offsetAdjust_Y(0x14) + local_30 - DAT_00cad890;
+                    double val = FFX2.FhCall.offsetAdjust_Y.fnptr!(0x14) + local_30 - DAT_00cad890;
                     int fixedVal = (int)val;
 
                     // Render Ability Mastered icons

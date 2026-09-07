@@ -41,7 +41,7 @@ public partial class X2DSUnlimitModule : FhModule {
         // in battle overwrite Chr string
         int btl_chr_ptr = FhUtil.get_at<int>(0xa0fbac);
         if (btl_chr_ptr != 0) {
-            Chr* chr = h_MsGetChr(chr_id);
+            Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
             int chr_base_addr = (int)chr;
             byte* name_area = (byte*)chr_base_addr + 0x358;
 
@@ -101,13 +101,7 @@ public partial class X2DSUnlimitModule : FhModule {
                 }
                 break;
         }
-    }
-
-    public unsafe byte* h_MsGetSaveChrName(uint chr_id) {
-        return FFX2.FhCall.MsGetSaveChrName.chain_from(h_MsGetSaveChrName).fnptr!(chr_id);
-    }
-
-    
+    }    
 
     // reimplementation so job name string is read correctly from job.bin for C# defined jobs
     // Returns a memory address at which a null-terminated string is located.
@@ -120,7 +114,7 @@ public partial class X2DSUnlimitModule : FhModule {
         int string_table_base = job_bin_base + 0x20 + string_start; //base, skip header, jump to start of string table
 
 
-        job_id = h_MsGetSaveJob(chr_id);
+        job_id = FFX2.FhCall.MsGetSaveJob.fnptr!(chr_id);
         byte* local_8 = null;
         ushort name_string_pointer = *(ushort*)(h_MsGetRomJob(chr_id, job_id, local_8));
 
@@ -135,9 +129,10 @@ public partial class X2DSUnlimitModule : FhModule {
     /// Reimplementations so job help string is read correctly from job.bin for C# defined jobs
     /// TOMenuSetHelpMes is run by kySetHelpJob2 and it takes a memory address of a null terminated byte string as a parameter.
     /// </summary>
+    /*
     public unsafe void h_TOMenuSetHelpMes(byte* addr_of_txt_bytes) {
         FFX2.FhCall.TOMenuSetHelpMes.chain_from(h_TOMenuSetHelpMes).fnptr!(addr_of_txt_bytes);
-    }
+    }*/
 
     public unsafe void h_kySetHelpJob2(uint job_id) {
         if (0x5020 <= job_id) {
@@ -159,9 +154,9 @@ public partial class X2DSUnlimitModule : FhModule {
 
             // cre help
             if (chr_id > 2) {
-                h_TOMenuSetHelpMes((byte*)(string_table_base + cre_help_string_offset));
+                FFX2.FhCall.TOMenuSetHelpMes.fnptr!((byte*)(string_table_base + cre_help_string_offset));
             }
-            h_TOMenuSetHelpMes((byte*)(string_table_base + help_string_offset));
+            FFX2.FhCall.TOMenuSetHelpMes.fnptr!((byte*)(string_table_base + help_string_offset));
         }
         else {
             FFX2.FhCall.kySetHelpJob2.chain_from(h_kySetHelpJob2).fnptr!(job_id);

@@ -70,7 +70,7 @@ public partial class X2DSUnlimitModule : FhModule {
 
             if (job_id == 0x5020) {
 
-                uint chr_addr = (uint)h_MsGetChr((uint)chr_id);
+                uint chr_addr = (uint)FFX2.FhCall.MsGetChr.fnptr!((uint)chr_id);
 
                 switch (chr_id) {
                     case 0:
@@ -99,7 +99,7 @@ public partial class X2DSUnlimitModule : FhModule {
                 }
             }
 
-            Chr* chr = h_MsGetChr((uint)chr_id);
+            Chr* chr = FFX2.FhCall.MsGetChr.fnptr!((uint)chr_id);
             int chr_base = (int)chr;
 
             *(byte*)(chr_base + 0x75f) = (byte)motion_data.mot_bin_num; //0; //(byte)psVar3[1];
