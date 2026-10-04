@@ -27,65 +27,65 @@ public partial class BattleMenuModule : FhModule
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public unsafe delegate int MsGetComData(uint arg1, byte** arg2);
     private static FhMethodHandle<MsGetComData> _MsGetComData =>
-        new(new FhMethodLocation("FFX-2.exe", 0x225160));
+        new(new FhMethodLocation("FFX-2.exe", 0x225130));
 
     // Re-review
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_TOBtlDrawComSet2(int param_1, int param_2, uint chr_id, uint param_4, uint cmd_id, uint param_6);
     public static FhMethodHandle<d_TOBtlDrawComSet2> TOBtlDrawComSet2
-        => new(new FhMethodLocation("FFX-2.exe", 0x356BC0));
+        => new(new FhMethodLocation("FFX-2.exe", 0x356af0));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public unsafe delegate uint d_TOBtlGetComInfo(uint chr_id, uint com_id, ComInfo* com_info);
     public static FhMethodHandle<d_TOBtlGetComInfo> TOBtlGetComInfo
-        => new(new FhMethodLocation("FFX-2.exe", 0x359EA0));
+        => new(new FhMethodLocation("FFX-2.exe", 0x359dc0));
 
     // Re-review
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_TOMkpValueRightPackRGBA(uint number, int ftol2_result, int ftol2_result2, uint rgba);
     public static FhMethodHandle<d_TOMkpValueRightPackRGBA> TOMkpValueRightPackRGBA
-        => new(new FhMethodLocation("FFX-2.exe", 0x3B1F10));
+        => new(new FhMethodLocation("FFX-2.exe", 0x3B1e20));
 
     // Re-review
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public unsafe delegate void d_TOMkpEasyMesFontLClutChrName(byte* ptr_text, float param_2, float param_3, uint param_4);
     public static FhMethodHandle<d_TOMkpEasyMesFontLClutChrName> TOMkpEasyMesFontLClutChrName
-        => new(new FhMethodLocation("FFX-2.exe", 0x3AEC40));
+        => new(new FhMethodLocation("FFX-2.exe", 0x3AEb40));
 
     // Re-review
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public unsafe delegate int d_TOAdpMesFontLXYZClutTypeRGBAChangeFontType(uint ppkt, int param_2, byte* ptr_text, float param_4, float param_5, uint param_6, int param_7, int param_8, byte r, byte g, byte b,
           byte a, byte param_13);
     public static FhMethodHandle<d_TOAdpMesFontLXYZClutTypeRGBAChangeFontType> TOAdpMesFontLXYZClutTypeRGBAChangeFontType
-        => new(new FhMethodLocation("FFX-2.exe", 0x3a7600));
+        => new(new FhMethodLocation("FFX-2.exe", 0x3a74e0));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int d_MsGetRamChrHP(uint chr_id);
     public static FhMethodHandle<d_MsGetRamChrHP> MsGetRamChrHP
-        => new(new FhMethodLocation("FFX-2.exe", 0x225B10));
+        => new(new FhMethodLocation("FFX-2.exe", 0x225B00));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int d_MsGetRamChrMP(uint chr_id);
     public static FhMethodHandle<d_MsGetRamChrMP> MsGetRamChrMP
-        => new(new FhMethodLocation("FFX-2.exe", 0x225B70));
+        => new(new FhMethodLocation("FFX-2.exe", 0x225B60));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate uint d_MsGetCommandMP(uint chr_id, uint cmd_id);
     public static FhMethodHandle<d_MsGetCommandMP> MsGetCommandMP
-        => new(new FhMethodLocation("FFX-2.exe", 0x21acf0));
+        => new(new FhMethodLocation("FFX-2.exe", 0x21acd0));
 
     // Re-review
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_TOMkpComIconRGBA(uint com_id, int param_2, int param_3, byte r, byte g, byte b, byte a);
     public static FhMethodHandle<d_TOMkpComIconRGBA> TOMkpComIconRGBA 
-        => new(new FhMethodLocation("FFX-2.exe", 0x3aea20));
+        => new(new FhMethodLocation("FFX-2.exe", 0x3ae920));
 
     // Re-review
     // param_8 (alpha?) -> 0x751951, SAR EAX, 0xc
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_TOMkpComIconNameClutRGBA(uint param_1, int param_2, int param_3, uint param_4, byte red, byte green, byte blue, int alpha);
     public static FhMethodHandle<d_TOMkpComIconNameClutRGBA> TOMkpComIconNameClutRGBA
-        => new(new FhMethodLocation("FFX-2.exe", 0x3ae9f0));
+        => new(new FhMethodLocation("FFX-2.exe", 0x3ae8f0));
 
     public BattleMenuModule() { }
 
@@ -104,7 +104,7 @@ public partial class BattleMenuModule : FhModule
     public unsafe void h_TOMkpComIconNameClutRGBA(uint cmd_id, int param_2, int param_3, uint param_4, byte red, byte green, byte blue, int alpha)
     {
 
-        uint btl_menu_chr_id = FhUtil.get_at<uint>(0xdb747c);
+        uint btl_menu_chr_id = FhUtil.get_at<uint>(0xDB647C);
         Chr* chr_pointer = FFX2.FhCall.MsGetChr.fnptr!(btl_menu_chr_id);
 
         uint chr_addr = (uint)chr_pointer;
@@ -178,7 +178,7 @@ public partial class BattleMenuModule : FhModule
         //local_3c = (int)   ;
 
         //local_40 = (int)(3.0f * (float)0x97 + (float)param_1);
-        local_40 = (int)(((float)param_6 * FhUtil.get_at<float>(0x962878)) + (float)param_1);
+        local_40 = (int)(((float)param_6 * FhUtil.get_at<float>(0x961884)) + (float)param_1);
         local_3c = (int)(0.8f * 3.5f + (float)param_2);
 
         TOBtlGetComInfo.fnptr!(chr_id, cmd_id, &com_info);
@@ -248,13 +248,13 @@ public partial class BattleMenuModule : FhModule
                 switch (seArray[iVar6].opcode)
                 {
                     case 1:
-                        FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x96287c), FhUtil.get_at<int>(0x962880));
+                        FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x961888), FhUtil.get_at<int>(0x96188c));
                         TOMkpComIconRGBA.fnptr!(com_id, iVar5, param_2, 0x80, 0x80, 0x80, 0x80);
                         FFX2.FhCall.FFX2_Reset_UI_Scale.fnptr!();
 
                         //concat_local_20 = (double)param_1;
                         //iVar5 = FUN_0087e0d0();
-                        iVar5 = (int)((FhUtil.get_at<float>(0x96287c) * FhUtil.get_at<double>(0x84aeb0) + (float)param_1));
+                        iVar5 = (int)((FhUtil.get_at<float>(0x961888) * FhUtil.get_at<double>(0x84aa08) + (float)param_1));
                         pCVar3 = local_30;
                         param_1 = iVar5;
                         break;
@@ -263,7 +263,7 @@ public partial class BattleMenuModule : FhModule
 
                         //local_2c = (double)param_1;
                         //iVar5 = FUN_0087e0d0();
-                        FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x962894), FhUtil.get_at<int>(0x962898));
+                        FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x9618a0), FhUtil.get_at<int>(0x9618a4));
                         //h_FFX2_Set_UI_Scale(_DAT_00d62894, _DAT_00d62898);
                         TOMkpValueRightPackRGBA.fnptr!(num_to_draw, local_40, local_3c, rgba_color);
                         FFX2.FhCall.FFX2_Reset_UI_Scale.fnptr!();
@@ -273,7 +273,7 @@ public partial class BattleMenuModule : FhModule
                         //iVar5 = FUN_0087e0d0();
 
                         num_to_draw = num_to_draw & 0xff;
-                        iVar5 = (int)((float)(num_to_draw * 0xb) * FhUtil.get_at<float>(0x962884) + iVar5);
+                        iVar5 = (int)((float)(num_to_draw * 0xb) * FhUtil.get_at<float>(0x961890) + iVar5);
                         pCVar3 = local_30;
                         param_1 = iVar5;
                         break;
@@ -284,12 +284,12 @@ public partial class BattleMenuModule : FhModule
 
                             //local_2c = (double)param_1;
                             //iVar5 = FUN_0087e0d0();
-                            iVar5 = (int)(FhUtil.get_at<float>(0x96288c) * FhUtil.get_at<double>(0x82c0e0) + (double)param_1);
+                            iVar5 = (int)(FhUtil.get_at<float>(0x961898) * FhUtil.get_at<double>(0x82c0e0) + (double)param_1);
                             param_1 = iVar5;
 
 
                             //h_FFX2_Set_UI_Scale(_DAT_00d62894, _DAT_00d62898);
-                            FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x962894), (int)FhUtil.get_at<int>(0x962898));
+                            FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x9618a0), (int)FhUtil.get_at<int>(0x9618a4));
 
                             if (!com_dark)
                             {
@@ -301,10 +301,10 @@ public partial class BattleMenuModule : FhModule
                             //concat_local_20 = (double)CONCAT44((float)((short)((ulonglong)concat_local_20 >> 0x20) * 0xb), (undefined4)concat_local_20);
                             //local_2c = (double)iVar5;
                             //iVar5 = FUN_0087e0d0();
-                            //iVar5 = (float)((short)(local_20 >> 0x20) * 0xb) * FhUtil.get_at<float>(0x962884) + (double)iVar5;
+                            //iVar5 = (float)((short)(local_20 >> 0x20) * 0xb) * FhUtil.get_at<float>(0x961890) + (double)iVar5;
                             num_to_draw = num_to_draw & 0xff;
                             
-                            iVar5 = (int)((float)(num_to_draw*0xb) * FhUtil.get_at<float>(0x962884) + iVar5);
+                            iVar5 = (int)((float)(num_to_draw*0xb) * FhUtil.get_at<float>(0x961890) + iVar5);
 
                             pCVar3 = local_30;
                             param_1 = iVar5;
@@ -313,7 +313,7 @@ public partial class BattleMenuModule : FhModule
                     case 5:
                         num_to_draw = (uint)MsGetRamChrHP.fnptr!((byte)chr_id);
                         //h_FFX2_Set_UI_Scale(_DAT_00d62894, _DAT_00d62898);
-                        FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x962894), FhUtil.get_at<int>(0x962898));
+                        FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x9618a0), FhUtil.get_at<int>(0x9618a4));
                         TOMkpValueRightPackRGBA.fnptr!(num_to_draw, local_40, local_3c, rgba_color);
                         FFX2.FhCall.FFX2_Reset_UI_Scale.fnptr!();
 
@@ -321,7 +321,7 @@ public partial class BattleMenuModule : FhModule
                         //local_2c = (double)param_1;
                         //iVar5 = FUN_0087e0d0();
                         num_to_draw = num_to_draw & 0xff;
-                        iVar5 = (int)((float)(num_to_draw * 0xb) * FhUtil.get_at<float>(0x962884) + iVar5);
+                        iVar5 = (int)((float)(num_to_draw * 0xb) * FhUtil.get_at<float>(0x961890) + iVar5);
                         
                         pCVar3 = local_30;
                         param_1 = iVar5;
@@ -329,7 +329,7 @@ public partial class BattleMenuModule : FhModule
                     case 6:
                         num_to_draw = (uint)MsGetRamChrMP.fnptr!((byte)chr_id);
                         //FFX2_Set_UI_Scale(_DAT_00d62894, _DAT_00d62898);
-                        FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x962894), FhUtil.get_at<int>(0x962898));
+                        FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x9618a0), FhUtil.get_at<int>(0x9618a4));
                         TOMkpValueRightPackRGBA.fnptr!(num_to_draw, local_40, local_3c, rgba_color);
                         FFX2.FhCall.FFX2_Reset_UI_Scale.fnptr!();
                         
@@ -337,7 +337,7 @@ public partial class BattleMenuModule : FhModule
                         //local_2c = (double)param_1;
                         //iVar5 = FUN_0087e0d0();
                         num_to_draw = num_to_draw & 0xff;
-                        iVar5 = (int)((float)(num_to_draw * 0xb) * FhUtil.get_at<float>(0x962884) + iVar5);
+                        iVar5 = (int)((float)(num_to_draw * 0xb) * FhUtil.get_at<float>(0x961890) + iVar5);
                         pCVar3 = local_30;
 
                         param_1 = iVar5;
@@ -358,10 +358,10 @@ public partial class BattleMenuModule : FhModule
 
 
                         //FFX2_Set_UI_Scale(_DAT_00d62884, _DAT_00d62888);
-                        FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x962884), FhUtil.get_at<int>(0x962888));
+                        FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x961890), FhUtil.get_at<int>(0x961894));
 
                         // local_20 = (double)CONCAT44((float)param_1,(undefined4)local_20)
-                        uint* ppkt = FhUtil.ptr_at<uint>(0x18cfb04);
+                        uint* ppkt = FhUtil.ptr_at<uint>(0x18CEB04);
                         uint ppkt_val = *(uint*)(ppkt);
 
                         // Draw command names of those that consume HP in red

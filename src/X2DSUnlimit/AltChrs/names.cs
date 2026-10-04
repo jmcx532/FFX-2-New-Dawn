@@ -15,7 +15,7 @@ public partial class X2DSUnlimitModule : FhModule {
 
     // Write Chr Name to party and btl_chr name buffers
     public unsafe void WriteChrName(CharName character_name, uint chr_id) {
-        byte* party_name_area = FhUtil.ptr_at<byte>(0xa05ffc);
+        byte* party_name_area = FhUtil.ptr_at<byte>(0xA04FFC);
         byte* party_name_base = party_name_area + (chr_id * 40);
 
 
@@ -39,7 +39,7 @@ public partial class X2DSUnlimitModule : FhModule {
         FhEncoding.encode(name, party_name_buffer);
 
         // in battle overwrite Chr string
-        int btl_chr_ptr = FhUtil.get_at<int>(0xa0fbac);
+        int btl_chr_ptr = FhUtil.get_at<int>(0xA0EBAC);
         if (btl_chr_ptr != 0) {
             Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
             int chr_base_addr = (int)chr;
@@ -109,7 +109,7 @@ public partial class X2DSUnlimitModule : FhModule {
 
         uint job_id;
 
-        int job_bin_base = FhUtil.get_at<int>(0x9f9188); // memory address of job.bin
+        int job_bin_base = FhUtil.get_at<int>(0x9F8188); // memory address of job.bin
         int string_start = *(int*)(job_bin_base + 0x18); // read from excel header
         int string_table_base = job_bin_base + 0x20 + string_start; //base, skip header, jump to start of string table
 
@@ -137,17 +137,17 @@ public partial class X2DSUnlimitModule : FhModule {
     public unsafe void h_kySetHelpJob2(uint job_id) {
         if (0x5020 <= job_id) {
 
-            int job_bin_base = FhUtil.get_at<int>(0x9f9188); // memory address of job.bin
+            int job_bin_base = FhUtil.get_at<int>(0x9F9188); // memory address of job.bin
             int string_start = *(int*)(job_bin_base + 0x18); // read from excel header
             int string_table_base = job_bin_base + 0x20 + string_start; //base, skip header, jump to start of string table
 
-            int chr_id = FhUtil.get_at<int>(0x9f6d80);
+            int chr_id = FhUtil.get_at<int>(0x9F5D80);
             byte* out_data_end = null;
 
             Job considered_job = *(Job*)h_MsGetRomJob((uint)chr_id, job_id, out_data_end);
 
-            ushort help_string_offset = considered_job.help_offset.text_offset;
-            ushort cre_help_string_offset = considered_job.creature_data.help_text.text_offset;
+            ushort help_string_offset = considered_job.help.text_offset;
+            ushort cre_help_string_offset = considered_job.creature_data.help.text_offset;
 
             //ushort help_string_offset = *(ushort*)(h_MsGetRomJob((uint)chr_id, job_id, out_data_end) + 0x4); // use this to get help string offset
             //ushort cre_help_string_offset = *(ushort*)(h_MsGetRomJob((uint)chr_id, job_id, out_data_end) + 0xAC);

@@ -18,7 +18,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int MsGetComData(uint arg1, byte* arg2);
     private static FhMethodHandle<MsGetComData> _MsGetComData =>
-        new(new FhMethodLocation("FFX-2.exe", 0x225160));
+        new(new FhMethodLocation("FFX-2.exe", 0x225130));
     
 
     public ATBRecoveryModule() { }

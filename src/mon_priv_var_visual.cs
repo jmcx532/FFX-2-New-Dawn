@@ -5,24 +5,24 @@ public partial class MonPrivVarsModule : FhModule
 {
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate int d_FUN_0072e730(int param_1, int param_2);
-    public static FhMethodHandle<d_FUN_0072e730> FUN_0072e730 =>
-        new(new FhMethodLocation("FFX-2.exe", 0x32e730));
+    public delegate int d_FUN_0072e6f0(int param_1, int param_2);
+    public static FhMethodHandle<d_FUN_0072e6f0> FUN_0072e6f0 =>
+        new(new FhMethodLocation("FFX-2.exe", 0x32e6f0));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_TOMkpATBGauge(int param_1, int param_2, int param_3, float param_4, float param_5, uint param_6);
     public static FhMethodHandle<d_TOMkpATBGauge> TOMkpATBGauge =>
-        new(new FhMethodLocation("FFX-2.exe", 0x3ae210));
+        new(new FhMethodLocation("FFX-2.exe", 0x3ae110));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public unsafe delegate int* d_TOAdpATBGauge(int* _ppkt, int param_1, int param_2, int param_3, float param_4, float param_5, uint param_6);
     public static FhMethodHandle<d_TOAdpATBGauge> TOAdpATBGauge =>
-        new(new FhMethodLocation("FFX-2.exe", 0x3a0e30));
+        new(new FhMethodLocation("FFX-2.exe", 0x3a0d00));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_TOMkpStdWindowXYWH(int param_1, int param_2, int param_3, int param_4, int param_5);
     public static FhMethodHandle<d_TOMkpStdWindowXYWH> TOMkpStdWindowXYWH =>
-        new(new FhMethodLocation("FFX-2.exe", 0x3b1a00));
+        new(new FhMethodLocation("FFX-2.exe", 0x3b1910));
 
     public MonPrivVarsModule() { }
 
@@ -34,9 +34,9 @@ public partial class MonPrivVarsModule : FhModule
         int p1_final = 0;
         if (basic_worker_addr == 0)
         {
-            p1_final = FhUtil.get_at<int>(0xa115a0);
+            p1_final = FhUtil.get_at<int>(0xA105A0);
         }
-        else
+         else
         {
             p1_final = basic_worker_addr;
         }
@@ -50,7 +50,7 @@ public partial class MonPrivVarsModule : FhModule
 
             int p2_unmasked = (int)uVar1;
 
-            int target_address = FUN_0072e730.fnptr!(p1_final, p2_unmasked & 0xffffff);
+            int target_address = FUN_0072e6f0.fnptr!(p1_final, p2_unmasked & 0xffffff);
 
             uint uVar4 = *(ushort*)(iVar3 + 4 + var_num * 8);
             // some_idx = ((int)some_idx < 0) - 1 & some_idx;
@@ -95,7 +95,7 @@ public partial class MonPrivVarsModule : FhModule
         }*/
 
         // current encounter is ffx-2.exe+9f9216
-        byte* current_encounter_string = FhUtil.ptr_at<byte>(0x9f9216);
+        byte* current_encounter_string = FhUtil.ptr_at<byte>(0x9F8216);
 
         Span<byte> buf = stackalloc byte[40];
         // read ability bytes into buffer
@@ -110,7 +110,7 @@ public partial class MonPrivVarsModule : FhModule
         //Decoding isn;t necessary, is ASCII already
         string encounter_string = Encoding.ASCII.GetString(buf.Slice(0, len));
 
-        int btl_chr_pointer = FhUtil.get_at<int>(0xa0fbac);
+        int btl_chr_pointer = FhUtil.get_at<int>(0xA0EBAC);
 
         if (btl_chr_pointer != 0)
         {
@@ -125,7 +125,11 @@ public partial class MonPrivVarsModule : FhModule
 
             uint gauge_status = 3;
 
+            int* battle_vars = FhUtil.ptr_at<int>(0xA106C8);
+
             bool draw_od_gauge = false;
+            bool draw_vegnagun_gauges = false;
+            bool draw_concherer_gauge = false;
 
             switch (encounter_string)
             {
@@ -173,6 +177,85 @@ public partial class MonPrivVarsModule : FhModule
                     enemy1_title_x_offset = -40;
                     draw_od_gauge = true;
                     break;
+                case "kino13_225":
+                    int nooj_lightfall_switch_addr = GenericPrivVarGetter(0, 2, 0);
+                    int nooj_lightfall_disabled = *(int*)nooj_lightfall_switch_addr;
+
+                    if (nooj_lightfall_disabled != 1)
+                    {
+                        draw_od_gauge = true;
+                    }
+
+                    Chr* nooj_chr_ptr = FFX2.FhCall.MsGetChr.fnptr!(0xf);
+                    int nooj_chr = (int)nooj_chr_ptr;
+
+                    int nooj_max_hp = *(int*)(nooj_chr + 0x384);
+                    int nooj_rem_hp = *(int*)(nooj_chr + 0x3B4);
+                    int lightfall_threshold = 9999;
+
+                    int hp_to_lose = nooj_max_hp - lightfall_threshold; //33801
+                    int hp_lost = nooj_max_hp - nooj_rem_hp;
+
+                    float lightfall_progress = 0.0f;
+
+                    if (hp_to_lose > 0)
+                    {
+                        lightfall_progress = ((float)hp_lost / (float)hp_to_lose) * 100.0f;
+
+                        if (lightfall_progress < 0.0f) lightfall_progress = 0.0f;
+                        if (lightfall_progress > 100.0f) lightfall_progress = 100.0f;
+                    }
+
+                    enemy1_count = lightfall_progress;
+                    enemy1_title_x_offset = -10;
+                    break;
+                case "bika08_229":
+                    int angra_counter_address = GenericPrivVarGetter(0, 0xA, 0);
+
+                    int angra_initial_pf_performed = *(int*)(GenericPrivVarGetter(0, 9, 0));
+
+                    if (angra_initial_pf_performed == 0)
+                    {
+                        enemy1_count = 100.0f;
+                    }
+                    else
+                    {
+                        enemy1_count = *(int*)(angra_counter_address) + 1;
+                        enemy1_count = (enemy1_count / 15f) * 100f;
+                    }
+
+                    enemy1_title_x_offset = 0;
+                    draw_od_gauge = true;
+                    break;
+                case "wegn01_226":
+                    
+                    int vegnagun_countdown = battle_vars[0x28 / sizeof(int)]; // BattleVar0028
+
+                    gauge_status = 2;
+
+                    enemy1_count = 100.0f - (vegnagun_countdown * 33.33f);
+                    enemy1_title_x_offset = -35;
+                    enemy1_title_y_offset = -90;
+                    draw_vegnagun_gauges = true;
+                    break;
+                case "stbv09_226":
+                    byte concherer_oversouled = *(byte*)(enemy1_chr_base + 0x3a9);
+                    int concherer_broken = battle_vars[0x24 / sizeof(int)]; // BattleVar0024
+                    int shell_hp = battle_vars[0x28 / sizeof(int)]; // BattleVar0028
+                    gauge_status = 4;
+
+                    enemy1_count = shell_hp;
+
+                    if (concherer_broken != 1 && concherer_oversouled != 1)
+                    {
+                        draw_concherer_gauge = true;
+                    }
+                    else
+                    {
+                        draw_concherer_gauge = false;
+                    }
+                    
+                    break;
             }
 
             if (enemy1_count >= 100.0f)
@@ -187,28 +270,87 @@ public partial class MonPrivVarsModule : FhModule
                 TOMkpATBGauge.chain_from(h_TOMkpATBGauge).fnptr!(0xf, enemy1_title_x + enemy1_title_x_offset, enemy1_title_y + enemy1_title_y_offset, enemy1_count, 100.0f, gauge_status);
             }
             
-        }
+            if (draw_concherer_gauge){
+                TOMkpATBGauge.chain_from(h_TOMkpATBGauge).fnptr!(0xf, enemy1_title_x + enemy1_title_x_offset, enemy1_title_y + enemy1_title_y_offset, enemy1_count, 100.0f, gauge_status);
+            }
 
+            if (draw_vegnagun_gauges){
+                int vegnagun_hide_OD_gauge_flag_addr = GenericPrivVarGetter(0, 7, 0);
+                int hide_vegnagun_OD_gauge = *(int*)(vegnagun_hide_OD_gauge_flag_addr);
+
+                Chr* ptr_shuyin_chr = FFX2.FhCall.MsGetChr.fnptr!(0x12);
+                int shuyin_chr_addr = (int)ptr_shuyin_chr;
+                int sy_title_pos_x = *(int*)(shuyin_chr_addr + 0x17b4);
+                int sy_title_pos_y = *(int*)(shuyin_chr_addr + 0x17b8);
+
+                Chr* ptr_vegnagun_head_chr = FFX2.FhCall.MsGetChr.fnptr!(0xf);
+                int vegnagun_chr_addr = (int)ptr_vegnagun_head_chr;
+
+                int vegnagun_max_hp = *(int*)(vegnagun_chr_addr + 0x384);
+                int vegnagun_current_hp = *(int*)(vegnagun_chr_addr + 0x3b4);
+
+                float quarter_hp = vegnagun_max_hp / 4.0f;
+
+
+                float[] gauges = new float[4];
+                float num_gauges = (vegnagun_max_hp - vegnagun_current_hp) / quarter_hp;
+                float total = num_gauges * 150.0f;
+
+                if (hide_vegnagun_OD_gauge != 1 && vegnagun_current_hp > 0)
+                {
+                    // Overdrive gauge
+                    TOMkpATBGauge.chain_from(h_TOMkpATBGauge).fnptr!(0xf, enemy1_title_x + enemy1_title_x_offset, enemy1_title_y + enemy1_title_y_offset, enemy1_count, 100.0f, gauge_status);
+
+                }
+
+                
+
+                for (int i = 0; i < 4; i++)
+                {
+                    float hp_in_quarter = vegnagun_current_hp - (i * quarter_hp);
+
+                    if (hp_in_quarter < 0.0f)
+                        hp_in_quarter = 0.0f;
+
+                    if (hp_in_quarter > quarter_hp)
+                        hp_in_quarter = quarter_hp;
+
+                    gauges[i] = (hp_in_quarter / quarter_hp) * 150.0f;
+                }
+
+
+                for (int i = 0; i < gauges.Length; i++)
+                {
+                    int gauge_spacing = 125;
+                    uint hp_gauge_status = 2;
+
+                    TOMkpATBGauge.chain_from(h_TOMkpATBGauge).fnptr!(0xf, 5 + (i * gauge_spacing), 5, gauges[i], 150.0f, hp_gauge_status);
+                }
+            }
+
+
+        }
     }
         
-
+    
     private string addr_string = "Address Here";
     private bool get_addr = false;
 
     private uint wkr_address = 0x0;
     private uint var_num = 0;
     private uint some_idx = 0;
+    private int integer_value = 0;
     public unsafe override void render_imgui()
     {
-        int btl_chr_pointer = FhUtil.get_at<int>(0xa0fbac);
+        int btl_chr_pointer = FhUtil.get_at<int>(0xA0EBAC);
 
         if (btl_chr_pointer != 0) {
 
             ImGui.Begin("726cd0 Tester", ImGuiWindowFlags.NoFocusOnAppearing);
 
             //string oblivion_count = "0";
-            int* p1_as_ptr = FhUtil.ptr_at<int>((0xa115a0));
-            int p1_as_int = FhUtil.get_at<int>(0xa115a0);
+            int* p1_as_ptr = FhUtil.ptr_at<int>((0xa105a0));
+            int p1_as_int = FhUtil.get_at<int>(0xA105A0);
 
             unsafe
             {
@@ -260,11 +402,13 @@ public partial class MonPrivVarsModule : FhModule
                 if (ImGui.Button("CustomVarGetterTest"))
                 {
                     addr_string = GenericPrivVarGetter((int)wkr_address, (int)var_num, (int)some_idx).ToString("X");
+                    integer_value = FhUtil.get_at<int>(GenericPrivVarGetter((int)wkr_address, (int)var_num, (int)some_idx));
                 }
 
             }
 
             ImGui.Text(addr_string);
+            ImGui.Text("Integer value is: " + integer_value.ToString());
             ImGui.End();
 
         }

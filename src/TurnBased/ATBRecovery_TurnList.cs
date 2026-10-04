@@ -139,8 +139,8 @@ public unsafe partial class ATBRecoveryModule : FhModule {
             uint com_exp_data = *(uint*)(cmd_base + 0x14);                  // get exp_data flags
             
 
-            uint WEAK_DELAY = FhUtil.get_at<uint>(0x9f8ea0);
-            uint STRONG_DELAY = FhUtil.get_at<uint>(0x9f8ea4);
+            uint WEAK_DELAY = FhUtil.get_at<uint>(0x9F6EA0);
+            uint STRONG_DELAY = FhUtil.get_at<uint>(0x9F6EA4);
 
 
             bool comWeakDelay = (com_exp_data & 0x1000) != 0;             // is weak delay flag set?
@@ -256,17 +256,17 @@ public unsafe partial class ATBRecoveryModule : FhModule {
 
 
         // calculate recovery time if spherechanging
-        byte spherechange_menu_open = FhUtil.get_at<byte>(0x9F7000);
+        byte spherechange_menu_open = FhUtil.get_at<byte>(0x9F5000);
         ushort highlighted_dressphere = 0x5001;
         switch (chr_id) {
             case 0: // Yuna
-                highlighted_dressphere = FhUtil.get_at<ushort>(0xA016F6);
+                highlighted_dressphere = FhUtil.get_at<ushort>(0x9FF6F6);
                 break;
             case 1: // Rikku
-                highlighted_dressphere = FhUtil.get_at<ushort>(0xA01776);
+                highlighted_dressphere = FhUtil.get_at<ushort>(0x9FF776);
                 break;
             case 2: // Paine
-                highlighted_dressphere = FhUtil.get_at<ushort>(0xA017F6);
+                highlighted_dressphere = FhUtil.get_at<ushort>(0x9FF7F6);
                 break;
         }
 
@@ -308,7 +308,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
     int GetDressphereJobData(ushort dressphere_id) {
         int job_data_address;
 
-        int job_bin_addr = FhUtil.get_at<int>(0x9f9188);// read job.bin pointer
+        int job_bin_addr = FhUtil.get_at<int>(0x9F8188);// read job.bin pointer
 
 
         uint ds_id = (uint)(dressphere_id & 0xfff);
@@ -322,7 +322,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
 
     // returns true if chr_id is being targeted
     public bool IsTargeted(uint chr_id) {
-        uint targeted_chrs_field = FhUtil.get_at<uint>(0xdb74b8);
+        uint targeted_chrs_field = FhUtil.get_at<uint>(0xDB54B8);
         uint[] targeted_chrs = new uint[31];
 
         for (int i = 0;i < targeted_chrs.Length; i++) {
@@ -339,8 +339,8 @@ public unsafe partial class ATBRecoveryModule : FhModule {
 
     //returns the id of which command is being hovered over, used to update the view when current character hovers over different commands
     ushort GetHoveredCommand() {
-        ushort sub  = FhUtil.get_at<ushort>(0x00DB7388);
-        ushort main = FhUtil.get_at<ushort>(0x00DB7380);
+        ushort sub  = FhUtil.get_at<ushort>(0xDB5388);
+        ushort main = FhUtil.get_at<ushort>(0xDB5380);
 
         return (sub != 0x00FF && sub != 0xFF00)
             ? sub
@@ -394,7 +394,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
     // TURN ORDER WINDOW RENDERING --------------------------------------------------
     public override void render_imgui() {
         base.render_imgui();
-        int num_allies_ready = FhUtil.get_at<int>(0xDB7480);
+        int num_allies_ready = FhUtil.get_at<int>(0xDB4480);
 
         // if a player character has a turn - show the turn order window
         if (num_allies_ready != 0) {

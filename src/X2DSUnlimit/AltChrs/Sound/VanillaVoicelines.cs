@@ -173,7 +173,7 @@ public static class VanillaVoicelines {
     new() { Offset = 0x12B0, Value = 0x4eb65f20 }, // 132603 - "Do I hear, Thunder?"
     // Restorative magic?
     new() { Offset = 0x12B8, Value = 0x4ed66520 }, // 132701 - "All shall be restored"
-    new() { Offset = 0x12C0, Value = 0x4ee66520 }, // 132702 - "It's not over"
+    new() { Offset = 0x12bf, Value = 0x4ee66520 }, // 132702 - "It's not over"
     new() { Offset = 0x1198, Value = 0x4ef66520 }, // 132703 - "Everyone, stay strong"
     // Steal / Flimflam
     new() { Offset = 0x1150, Value = 0x4e166c20 }, // 132801 - "Whatcha hiding?"

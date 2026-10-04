@@ -14,7 +14,7 @@ public partial class ChocoboRanchModule : FhModule
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_MsBattleExe(uint arg1, uint arg2, uint arg3, uint arg4);
     public static FhMethodHandle<d_MsBattleExe> MsBattleExe =>
-        new(new FhMethodLocation("FFX-2.exe", 0x2076F0));
+        new(new FhMethodLocation("FFX-2.exe", 0x2076c0));
 
     public ChocoboRanchModule() { }
 
@@ -23,7 +23,7 @@ public partial class ChocoboRanchModule : FhModule
         MsBattleExe.chain_from(h_MsBattleExe).fnptr!(arg1, arg2, arg3, arg4);
 
         // current encounter is ffx-2.exe+9f9216
-        byte* current_encounter_string = FhUtil.ptr_at<byte>(0x9f9216);
+        byte* current_encounter_string = FhUtil.ptr_at<byte>(0x9F9216);
 
         Span<byte> buf = stackalloc byte[40];
         // read ability bytes into buffer
@@ -41,7 +41,7 @@ public partial class ChocoboRanchModule : FhModule
         if (encounter_string == "nagi05_229")
         {
             // Set owned chocobo quantity to 5
-            FhUtil.set_at<byte>(0x9fa1f7, 5);
+            FhUtil.set_at<byte>(0x9F91F7, 5);
 
             for (int i = 0; i < 5; i++)
             {

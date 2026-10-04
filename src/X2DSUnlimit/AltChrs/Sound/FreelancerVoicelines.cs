@@ -2,12 +2,12 @@
 
 namespace Fahrenheit.Mods.X2DSUnlimit;
 
-public static class LeblancGoonVoicelines {
+public static class FreelancerVoicelines {
 
     // Auto-generated from FFX-2 Battle Voicelines CSV
     // Character codes: yn = Yuna, rk = Rikku, pn = Paine
 
-    public static readonly MemoryWrite[] LeblancGoonVL_yn = // Yuna
+    public static readonly MemoryWrite[] FreelancerWrites_yn = // Yuna
 [
     // Battle start
     new() { Offset = 0x2240, Value = 0x4e56521d },
@@ -173,7 +173,7 @@ public static class LeblancGoonVoicelines {
     new() { Offset = 0x12B0, Value = 0x4eb65f20 },
     // Restorative magic?
     new() { Offset = 0x12B8, Value = 0x4ed66520 },
-    new() { Offset = 0x12C0, Value = 0x4ee66520 },
+    new() { Offset = 0x12bf, Value = 0x4ee66520 },
     new() { Offset = 0x1198, Value = 0x4ef66520 },
     // Steal / Flimflam
     new() { Offset = 0x1150, Value = 0x4e166c20 },
@@ -635,7 +635,7 @@ public static class LeblancGoonVoicelines {
     new() { Offset = 0x26E0, Value = 0x4e66023b },
 ];
 
-    public static readonly MemoryWrite[] LeblancGoonVL_rk = // Rikku
+    public static readonly MemoryWrite[] FreelancerWrites_rk = // Rikku
 [
     // Battle start
     new() { Offset = 0x2270, Value = 0x8b94581d },
@@ -1217,7 +1217,7 @@ public static class LeblancGoonVoicelines {
     new() { Offset = 0x24F4, Value = 0x8b04dd3a },
 ];
 
-    public static readonly MemoryWrite[] LeblancGoonVL_pn = // Paine
+    public static readonly MemoryWrite[] FreelancerWrites_pn = // Paine
 [
     // Battle start
     new() { Offset = 0x2290, Value = 0x0ed45e1d },

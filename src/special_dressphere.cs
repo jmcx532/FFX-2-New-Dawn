@@ -15,17 +15,17 @@ public partial class SpecialDressphereModule : FhModule
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_MsSetSaveParam(uint chr_id);
     public static FhMethodHandle<d_MsSetSaveParam> MsSetSaveParam =>
-        new(new FhMethodLocation("FFX-2.exe", 0x20E300));
+        new(new FhMethodLocation("FFX-2.exe", 0x20E290));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public unsafe delegate Plate* d_MsGetRomPlate(uint plate_id, byte* out_data_end);
     public static FhMethodHandle<d_MsGetRomPlate> MsGetRomPlate =>
-        new(new FhMethodLocation("FFX-2.exe", 0x21DF80));
+        new(new FhMethodLocation("FFX-2.exe", 0x21DF60));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public unsafe delegate PlySave* d_MsGetSavePlayerPtr(uint chr_id);
     public static FhMethodHandle<d_MsGetSavePlayerPtr> MsGetSavePlayerPtr =>
-        new(new FhMethodLocation("FFX-2.exe", 0x20cc40));
+        new(new FhMethodLocation("FFX-2.exe", 0x20CC10));
 
 
     public SpecialDressphereModule() { }

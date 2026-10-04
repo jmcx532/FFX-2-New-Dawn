@@ -98,7 +98,6 @@ public partial class X2DSUnlimitModule : FhModule {
     // handle FL/LG getting ability to be learned
     public unsafe uint h_MsGetSaveLearn(uint chr_id, uint job_id)
     {
-
         uint chr_num;
         int is_plyChr;
 
@@ -109,7 +108,7 @@ public partial class X2DSUnlimitModule : FhModule {
             uint job_num = FFX2.FhCall.MsGetJobNumBasic.fnptr!(job_id);
             if (job_num < 0x1e) // Vanilla
             {
-                ushort* DAT_00e05de0 = FhUtil.ptr_at<ushort>(0xa05de0);
+                ushort* DAT_00e05de0 = FhUtil.ptr_at<ushort>(0xA04DE0);
 
                 return *(ushort*)((int)(DAT_00e05de0) + (job_num + chr_num * 0x1e) * 2);
             }
@@ -157,7 +156,7 @@ public partial class X2DSUnlimitModule : FhModule {
             uint job_num = FFX2.FhCall.MsGetJobNumBasic.fnptr!(job_id);
             if (job_num< 0x1e) // vanilla
             {
-                ushort* DAT_00e05de0 = FhUtil.ptr_at<ushort>(0xa05de0);
+                ushort* DAT_00e05de0 = FhUtil.ptr_at<ushort>(0xA04DE0);
                 *(ushort*)((int)(DAT_00e05de0) + (job_num + chr_num * 0x1e) * 2) = ability_id;
                 return -1;
             }
@@ -242,7 +241,7 @@ public partial class X2DSUnlimitModule : FhModule {
     {
         int isOwned;
         ushort ds_count;
-        byte* unique_ds_on_grid_list = FhUtil.ptr_at<byte>(0x9f5fc4);
+        byte* unique_ds_on_grid_list = FhUtil.ptr_at<byte>(0x9F4FC4);
 
         ds_count = 0;
         for (int i = 0; i < CustomDsLookupTable.Length; i++)
@@ -255,7 +254,7 @@ public partial class X2DSUnlimitModule : FhModule {
             }
         }
 
-        FhUtil.set_at<uint>(0x9f602c, ds_count);
+        FhUtil.set_at<uint>(0x9F502C, ds_count);
         //_logger.Info("Return result: " + number_of_elements.ToString());
         return ds_count;
     }
@@ -280,7 +279,7 @@ public partial class X2DSUnlimitModule : FhModule {
 
         if ((ds_id & 0xfff) < 0x1e) // Vanilla dresspheres
         {
-            byte* DAT_00E00D1C = FhUtil.ptr_at<byte>(0xa00d1c);
+            byte* DAT_00E00D1C = FhUtil.ptr_at<byte>(0x9ffD1C);
             return *(sbyte*)(DAT_00E00D1C + (ds_id & 0xfff));
         }
 
@@ -292,7 +291,7 @@ public partial class X2DSUnlimitModule : FhModule {
     {
         int quantity;
 
-        byte* DAT_00E00D1C = FhUtil.ptr_at<byte>(0xa00d1c); // dressphere quantities memory region
+        byte* DAT_00E00D1C = FhUtil.ptr_at<byte>(0x9ffD1C); // dressphere quantities memory region
         ds_id = ds_id & 0xfff;
 
         
@@ -322,7 +321,7 @@ public partial class X2DSUnlimitModule : FhModule {
 
     public unsafe override bool init(FhModContext mod_context, FileStream global_state_file) {
 
-        return FFX2.FhCall.FUN_006083B0.hook(this, h_FUN_6083B0)
+        return FFX2.FhCall.FUN_00208380.hook(this, h_FUN_608380)
             && FFX2.FhCall.MsGetRomJob.hook(this, h_MsGetRomJob)
             && FFX2.FhCall.MsAddSaveDreSphere.hook(this, h_MsAddSaveDreSphere)
             && FFX2.FhCall.MsGetSaveDreSphere.hook(this, h_MsGetSaveDreSphere)
@@ -352,8 +351,8 @@ public partial class X2DSUnlimitModule : FhModule {
 
             && FFX2.FhCall.MsGetChrID.hook(this, h_MsGetChrID)
             && FFX2.FhCall.MsSetRamMotionChrData.hook(this, h_MsSetRamMotionChrData)
-            && FFX2.FhCall.FUN_0062AB30.hook(this, h_FUN_62AB30)
-            && FFX2.FhCall.FUN_00534A70.hook(this, h_FUN_534A70)
+            && FFX2.FhCall.FUN_0022ab10.hook(this, h_FUN_62AB10)
+            && FFX2.FhCall.FUN_00134bd0.hook(this, h_FUN_534BD0)
             //&& FFX2.FhCall.MsGetSaveChrName.hook(this, h_MsGetSaveChrName)
 
             && FFX2.FhCall.TOGetFaceIndex2.hook(this, h_TOGetFaceIndex2)
@@ -362,18 +361,18 @@ public partial class X2DSUnlimitModule : FhModule {
             && FFX2.FhCall.TOCtrlATBChr.hook(this, h_TOCtrlATBChr)
 
             && FFX2.FhCall.TOMenuGetJobLearnedRate.hook(this, h_TOMenuGetJobLearnedRate)
-            && _FUN_00778680.hook(this, h_FUN_00778680)
+            && _FUN_007785A0.hook(this, h_FUN_007785A0)
 
             && FFX2.FhCall.TOMenuNextJobList.hook(this, h_TOMenuNextJobList)
             && FFX2.FhCall.TOMenuPrevJobList.hook(this, h_TOMenuPrevJobList)
 
-            && FFX2.FhCall.FUN_777C60.hook(this, h_FUN_777C60)
+            && FFX2.FhCall.FUN_377b80.hook(this, h_FUN_777B80)
             && FFX2.FhCall.TOGetRomHelp.hook(this, h_TOGetRomHelp)
             && FFX2.FhCall.TkMenuSetHelpMessage.hook(this, h_TkMenuSetHelpMessage)
 
-            && FFX2.FhCall.FUN_778160.hook(this, h_FUN_778160)
-            && FFX2.FhCall.FUN_776EC0.hook(this, h_FUN_776EC0)
-            && FFX2.FhCall.FUN_777270.hook(this, h_FUN_777270)
+            && FFX2.FhCall.FUN_378080.hook(this, h_FUN_778080)
+            && FFX2.FhCall.FUN_376de0.hook(this, h_FUN_776DE0)
+            && FFX2.FhCall.FUN_377190.hook(this, h_FUN_777190)
             && FFX2.FhCall.TOMenuSetSaveLearn.hook(this, h_TOMenuSetSaveLearn);
     }
 

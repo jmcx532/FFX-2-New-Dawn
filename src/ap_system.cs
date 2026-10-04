@@ -1,4 +1,4 @@
-﻿namespace Fahrenheit.Mods.FFX2NewDawn;
+﻿namespace Fahrenheit.Mods.NewDawn;
 
 [StructLayout(LayoutKind.Explicit, Size = 0x80)]
 public struct DamageBufferStatus
@@ -17,10 +17,52 @@ public struct DamageBufferStatus
 [FhLoad(FhGameId.FFX2)]
 public partial class APSystemModule : FhModule {
 
+    #region LocalState
+    public static bool y_mp_booster;
+    public static bool r_mp_booster;
+    public static bool p_mp_booster;
+    public static bool y_mp_rage;
+    public static bool r_mp_rage;
+    public static bool p_mp_rage;
+
+    private class APSystemState
+    {
+        public bool y_mp_booster { get; set; }
+        public bool r_mp_booster { get; set; }
+        public bool p_mp_booster { get; set; }
+        public bool y_mp_rage { get; set; }
+        public bool r_mp_rage { get; set; }
+        public bool p_mp_rage { get; set; }
+
+        public APSystemState()
+        {
+            y_mp_booster = APSystemModule.y_mp_booster;
+            r_mp_booster = APSystemModule.r_mp_booster;
+            p_mp_booster = APSystemModule.p_mp_booster;
+
+            y_mp_rage = APSystemModule.y_mp_rage;
+            r_mp_rage = APSystemModule.r_mp_rage;
+            p_mp_rage = APSystemModule.p_mp_rage;
+
+        }
+
+    }
+    #endregion LocalState
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public unsafe delegate int MsGetComData(uint arg1, byte* arg2);
     private static FhMethodHandle<MsGetComData> _MsGetComData =>
-        new(new FhMethodLocation("FFX-2.exe", 0x225160));
+        new(new FhMethodLocation("FFX-2.exe", 0x225130));
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public unsafe delegate void d_MsSetRamChrAbility(uint chr_id, ChrRam* ram);
+    public static FhMethodHandle<d_MsSetRamChrAbility> MsSetRamChrAbility =>
+        new(new FhMethodLocation("FFX-2.exe", 0x226a20));
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate uint d_kySetSkill(uint chr_id, uint arg2, uint ability_id, uint arg4);
+    public static FhMethodHandle<d_kySetSkill> kySetSkill =>
+        new(new FhMethodLocation("FFX-2.exe", 0x1EC940));
 
     /* 7100228500 - Called by MsCalcHitSignal - one way the game uses this is to increase a Chr's 0xEC2 flag - increases on hits
      * Not chain count, that's a different field.
@@ -28,32 +70,32 @@ public partial class APSystemModule : FhModule {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public unsafe delegate void d_FUN_6420C0(byte chr_id, Chr* chr, int chr_id2, Chr* chr2, uint cmd_id, uint cmd_addr, int param_7, DamageBufferStatus* dmg_info, uint param_9, int param_10, uint param_11);
     public static FhMethodHandle<d_FUN_6420C0> FUN_6420C0
-        => new(new FhMethodLocation("FFX-2.exe", 0x2420C0));
+        => new(new FhMethodLocation("FFX-2.exe", 0x242090));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate byte d_TOBtlOpenFukidashiWinStealItem(uint user_id, byte param_2, uint item, uint steal_result_code);
     public static FhMethodHandle<d_TOBtlOpenFukidashiWinStealItem> TOBtlOpenFukidashiWinStealItem
-        => new(new FhMethodLocation("FFX-2.exe", 0x35C100));
+        => new(new FhMethodLocation("FFX-2.exe", 0x35C040));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate byte d_TOBtlOpenFukidashiWinStealGil(uint user_id, byte param_2, uint gil_stolen);
     public static FhMethodHandle<d_TOBtlOpenFukidashiWinStealGil> TOBtlOpenFukidashiWinStealGil
-        => new(new FhMethodLocation("FFX-2.exe", 0x35C050));
+        => new(new FhMethodLocation("FFX-2.exe", 0x35C040));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_MsUseChrMP(uint chr_id, uint cmd_id, int amount);
     public static FhMethodHandle<d_MsUseChrMP> MsUseChrMP
-        => new(new FhMethodLocation("FFx-2.exe", 0x21b8c0));
+        => new(new FhMethodLocation("FFx-2.exe", 0x21b8a0));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public unsafe delegate PlySave* d_MsGetSavePlayerPtr(uint chr_id);
     public static FhMethodHandle<d_MsGetSavePlayerPtr> MsGetSavePlayerPtr
-        => new(new FhMethodLocation("FFX-2.exe", 0x20CC40));
+        => new(new FhMethodLocation("FFX-2.exe", 0x20CC10));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate uint d_MsGetCommandMP(uint chr_id, uint cmd_id);
     public static FhMethodHandle<d_MsGetCommandMP> MsGetCommandMP
-        => new(new FhMethodLocation("FFX-2.exe", 0x21acf0));
+        => new(new FhMethodLocation("FFX-2.exe", 0x21acd0));
 
     public APSystemModule() { }
 
@@ -76,9 +118,22 @@ public partial class APSystemModule : FhModule {
         buffer.chr_id = (byte)chr_id;
         buffer.damage_mp = amount;
 
-        // Ragnarok doubles MP gain
+        /* Ragnarok increases MP gain by 1
         PlySave chr_ply_save = *(PlySave*)MsGetSavePlayerPtr.fnptr!(chr_id);
         if (chr_ply_save.equipped_accessory[0] == 0x907D || chr_ply_save.equipped_accessory[1] == 0x907D)
+        {
+            buffer.damage_mp = amount - 1;
+        }*/
+
+        if (chr_id == 0 && y_mp_booster)
+        {
+            buffer.damage_mp = amount - 1;
+        }
+        if (chr_id == 1 && r_mp_booster)
+        {
+            buffer.damage_mp = amount - 1;
+        }
+        if (chr_id == 2 && p_mp_booster)
         {
             buffer.damage_mp = amount - 1;
         }
@@ -102,35 +157,124 @@ public partial class APSystemModule : FhModule {
     }
 
     /// <summary>
+    ///     Read character auto-abilities and set flags.
     ///     On battle start, force character's current MP to be 3. (Only works for player characters)
     /// </summary>
     /// <param name="chr_id"></param>
-    public unsafe void h_MsSetRamChrParam(uint chr_id) {
+    /// <param name="ram"></param>
+    public unsafe void h_MsSetRamChrAbility(uint chr_id, ChrRam* ram)
+    {
+        MsSetRamChrAbility.chain_from(h_MsSetRamChrAbility).fnptr!(chr_id, ram);
 
-        FFX2.FhCall.MsSetRamChrParam.chain_from(h_MsSetRamChrParam).fnptr!(chr_id);
+        Chr* ptr_chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
+        uint chr_addr = (uint)ptr_chr; 
 
-        Chr* chr_base = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
-        int chr_base_int = (int)chr_base;
-
-        PlySave* ptr_ply_save = MsGetSavePlayerPtr.fnptr!(chr_id);
-
-        if (ptr_ply_save != null)
+        if (chr_id == 0)
         {
-            PlySave ply_save = *(PlySave*)(ptr_ply_save);
+            y_mp_booster = false;
+            y_mp_rage = false;
 
-            if (ply_save.equipped_accessory[0] == 0x907B || ply_save.equipped_accessory[1] == 0x907B)
+            *(uint*)(chr_addr + 0x3b8) = 3; // Starting MP is 3
+        }
+        if (chr_id == 1)
+        {
+            r_mp_booster = false;
+            r_mp_rage = false;
+
+            *(uint*)(chr_addr + 0x3b8) = 3; // Starting MP is 3
+        }
+        if (chr_id == 2)
+        {
+            p_mp_booster = false;
+            p_mp_rage = false;
+
+            *(uint*)(chr_addr + 0x3b8) = 3; // Starting MP is 3
+        }
+
+        ushort* ptr_a_ability_list = FhUtil.ptr_at<ushort>(0x9F8278);
+        for (int i = 0; i < 32; i++)
+        {
+            ushort a_ability = ptr_a_ability_list[i];
+
+            if (a_ability == 0x8071)
             {
-                *(uint*)(chr_base_int + 0x3b8) = 5; // Starting MP is 5 for character's with Cat Nip
+                switch (chr_id)
+                {
+                    case 0:
+                        y_mp_booster = true;
+                        break;
+                    case 1:
+                        r_mp_booster = true;
+                        break;
+                    case 2:
+                        p_mp_booster = true;
+                        break;
+                }
             }
-            else
+
+            if (a_ability == 0x807A)
             {
-                //*(uint*)(chr_base_int + 0x3b8) = *(uint*)(chr_base_int + 0x390) / 3; // Starting MP is 1/3 Max MP.
-                *(uint*)(chr_base_int + 0x3b8) = 3; // Starting MP is 3
+                switch (chr_id)
+                {
+                    case 0:
+                        y_mp_rage = true;
+                        *(uint*)(chr_addr + 0x3b8) = 5; // Starting MP is now 5
+                        break;
+                    case 1:
+                        r_mp_rage = true;
+                        *(uint*)(chr_addr + 0x3b8) = 5; // Starting MP is now 5
+                        break;
+                    case 2:
+                        p_mp_rage = true;
+                        *(uint*)(chr_addr + 0x3b8) = 5; // Starting MP is now 5
+                        break;
+                }
             }
 
         }
     }
 
+    public uint h_kySetSkill(uint chr_id, uint arg2, uint ability_id, uint arg4)
+    {
+        uint original_result = kySetSkill.chain_from(h_kySetSkill).fnptr!(chr_id, arg2, ability_id, arg4);
+
+        // MP Booster
+        if (ability_id == 0x8071)
+        {
+            switch (chr_id)
+            {
+                case 0:
+                    y_mp_booster = true;
+                    break;
+                case 1:
+                    r_mp_booster = true;
+                    break;
+                case 2:
+                    p_mp_booster = true;
+                    break;
+            }
+        }
+
+        // MP Rage
+        if (ability_id == 0x807A)
+        {
+            switch (chr_id)
+            {
+                case 0:
+                    y_mp_rage = true;
+                    break;
+                case 1:
+                    r_mp_rage = true;
+                    break;
+                case 2:
+                    p_mp_rage = true;
+                    break;
+            }
+        }
+
+        return original_result;
+
+    }
 
     // Restore 1 MP on turn start.
     public unsafe void h_TOBtlSetATBChr(byte chr_id)
@@ -219,7 +363,7 @@ public partial class APSystemModule : FhModule {
 
         cmd_addr = _MsGetComData.fnptr!(cmd_id, (byte*)0);
 
-        int chr_top = FhUtil.get_at<int>(0xa0fbac); // MsGetChrTop - start of Chr structs
+        int chr_top = FhUtil.get_at<int>(0xA0EBAC); // MsGetChrTop - start of Chr structs
         if (chr_top == 0)
         {
             ply_save_ptr = MsGetSavePlayerPtr.fnptr!(chr_id);
@@ -516,7 +660,8 @@ public partial class APSystemModule : FhModule {
             && TOBtlOpenFukidashiWinStealItem.hook(this, h_TOBtlOpenFukidashiWinStealItem)
             && TOBtlOpenFukidashiWinStealGil.hook(this, h_TOBtlOpenFukidashiWinStealGil)
             && FFX2.FhCall.CalculateStats.hook(this, h_CalculateStats)
-            && FFX2.FhCall.MsSetRamChrParam.hook(this, h_MsSetRamChrParam)
+            && MsSetRamChrAbility.hook(this, h_MsSetRamChrAbility)
+            && kySetSkill.hook(this, h_kySetSkill)
             && FFX2.FhCall.TOBtlSetATBChr.hook(this, h_TOBtlSetATBChr)
             && FFX2.FhCall.MsCommandComplete.hook(this, h_MsCommandComplete)
             && MsUseChrMP.hook(this, h_MsUseChrMP)

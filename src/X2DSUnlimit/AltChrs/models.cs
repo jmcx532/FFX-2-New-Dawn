@@ -16,7 +16,7 @@ public partial class X2DSUnlimitModule : FhModule {
         Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
         int chr_base_addr = (int)chr;
         int original_model = *(int*)(chr_base_addr + 4);
-        ushort* party_ds_record_base = FhUtil.ptr_at<ushort>(0xa016f6);
+        ushort* party_ds_record_base = FhUtil.ptr_at<ushort>(0xA006F6);
 
 
         // Chr + is character model, Chr + 8 is character motion

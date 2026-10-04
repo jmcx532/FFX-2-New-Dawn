@@ -13,7 +13,7 @@ public unsafe class PreEmptiveModule : FhModule {
     public delegate int MsGetComData(uint command_id, int* param_2);
     //used to get commands base address, can be used for auto abilites and Garment Grids maybe
     private static FhMethodHandle<MsGetComData> _MsGetComData =>
-        new(new FhMethodLocation("FFX-2.exe", 0x225160));
+        new(new FhMethodLocation("FFX-2.exe", 0x225130));
 
     public PreEmptiveModule() { }
 

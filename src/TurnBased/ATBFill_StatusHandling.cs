@@ -146,7 +146,7 @@ public unsafe partial class ATBFillModule : FhModule
                     uint uVar6 = FFX2.FhCall.MsCheckStatCount.fnptr!(14);
                     doom_count = (sbyte)FhCall.MsCheckRange.fnptr!(new_doom_count, 0, 0x7d);
                     *(sbyte*)(chr_base + 0x4c2) = doom_count;
-                    FFX2.FhCall.FUN_00636690.fnptr!(chr_id, chr, (byte)uVar6);   
+                    FFX2.FhCall.FUN_00236660.fnptr!(chr_id, chr, (byte)uVar6);   
                 }
                 else
                 {

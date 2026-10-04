@@ -17,8 +17,8 @@ public partial class X2DSUnlimitModule : FhModule
     public unsafe uint h_kyGetUsedPoint()
     {
 
-        int plate_data_base = FhUtil.get_at<int>(0x9f5fc0);
-        byte current_plate_id = FhUtil.get_at<byte>(0x9f6d78);
+        int plate_data_base = FhUtil.get_at<int>(0x9F4FC0);
+        byte current_plate_id = FhUtil.get_at<byte>(0x9F5D78);
 
         int current_plate_base = plate_data_base + (current_plate_id * 32);
 
@@ -35,7 +35,7 @@ public partial class X2DSUnlimitModule : FhModule
             }
         }
 
-        byte* unique_ds_on_grid_list = FhUtil.ptr_at<byte>(0x9f5fc4);
+        byte* unique_ds_on_grid_list = FhUtil.ptr_at<byte>(0x9F4FC4);
         byte count = 0;
         // Write list to memory
         for (int i = 0; i < dses_on_grid.Length; i++)
@@ -89,8 +89,8 @@ public partial class X2DSUnlimitModule : FhModule
     {
         const int GARMENT_GRID_COUNT = 64;
         const int GRID_DATA_SIZE = 32;             // bytes of data per grid
-        int plate_data_base = FhUtil.get_at<int>(0x9f5fc0); // base of Garment Grid Data
-        byte* gg_obtain_list = FhUtil.ptr_at<byte>(0x9f5fd8); // DAT_00DF5fd8 is a list of which Garment Grids have been obtained. (Menu oriented, which ones to display in the list.
+        int plate_data_base = FhUtil.get_at<int>(0x9F4FC0); // base of Garment Grid Data
+        byte* gg_obtain_list = FhUtil.ptr_at<byte>(0x9F4FD8); // DAT_00DF5fd8 is a list of which Garment Grids have been obtained. (Menu oriented, which ones to display in the list.
 
         int plate_id = 0;
         int num_plates_with_spheres = 0;
@@ -115,7 +115,7 @@ public partial class X2DSUnlimitModule : FhModule
             plate_id = plate_id + 1;
         } while (plate_id < GARMENT_GRID_COUNT);
 
-        FhUtil.set_at<int>(0x9f6d88, num_plates_with_spheres);
+        FhUtil.set_at<int>(0x9F5D88, num_plates_with_spheres);
         return num_plates_owned;
     }
 

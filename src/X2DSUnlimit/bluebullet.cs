@@ -8,9 +8,9 @@
 /// </summary>
 public partial class X2DSUnlimitModule : FhModule {
 
-    public unsafe DSAbilityListDataAbilityArray* h_FUN_00778680() {
+    public unsafe DSAbilityListDataAbilityArray* h_FUN_007785A0() {
 
-        ushort current_dressphere = FhUtil.get_at<ushort>(0x12c0266);
+        ushort current_dressphere = FhUtil.get_at<ushort>(0x12bf266);
         return &ability_list_data_ptr[current_dressphere].Abilities;
 
     }

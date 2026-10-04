@@ -7,54 +7,61 @@
  * Pairs up with ATBFill_StatusHandling.cs which has special handling
  * for statuses that prevent character's from acting.
  */
+//using static Fahrenheit.Mods.NewDawn.APSystemModule;
 
 namespace Fahrenheit.Modules.FFX2TurnBased;
 
 [FhLoad(FhGameId.FFX2)]
 public unsafe partial class ATBFillModule : FhModule {
 
-    //649380
+    //649580
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate uint MsAutoConfuseProcess(uint chr_id);//this may be missing a param_2
     private static FhMethodHandle<MsAutoConfuseProcess> _MsAutoConfuseProcess =>
-        new(new FhMethodLocation("FFX-2.exe", 0x249380));//649380
+        new(new FhMethodLocation("FFX-2.exe", 0x249350));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int MsGetComData(uint arg1, byte* arg2);
-    //625160 - MsGetComData (delegate declared in ATBFill_StatusHandling.cs)
+    //625130 - MsGetComData (delegate declared in ATBFill_StatusHandling.cs)
     private static FhMethodHandle<MsGetComData> _MsGetComData =>
-        new(new FhMethodLocation("FFX-2.exe", 0x225160));
+        new(new FhMethodLocation("FFX-2.exe", 0x225130));
 
-    //634b40 - msChrATBprocess
+    //634b10 - msChrATBprocess
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int msChrATBprocess(byte chr_id, Chr* chr, int* param_3, int param_4);
     private static FhMethodHandle<msChrATBprocess> _msChrATBprocess =>
-        new(new FhMethodLocation("FFX-2.exe", 0x234B40));//634b40
+        new(new FhMethodLocation("FFX-2.exe", 0x234B10));
 
     // NewDawn, for controlling berserked character's under certain circumstances
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public unsafe delegate PlySave* d_MsGetSavePlayerPtr(uint chr_id);
     public static FhMethodHandle<d_MsGetSavePlayerPtr> MsGetSavePlayerPtr
-        => new(new FhMethodLocation("FFX-2.exe", 0x20CC40));
+        => new(new FhMethodLocation("FFX-2.exe", 0x20CC10));
     
     // Delegate reviewed
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate uint d_MsATBcommandClose(uint chr_id, byte arg2);
     public static FhMethodHandle<d_MsATBcommandClose> MsATBcommandClose
-        => new(new FhMethodLocation("FFX-2.exe", 0x234040));
+        => new(new FhMethodLocation("FFX-2.exe", 0x234010));
 
     // Delegate reviewed
-    // arg2 is a pseudo status field
+    // arg2 is a pseudo status field? -- REREVIEW, does it really have a 2nd parameter?
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_TOBtlDeleteATBChr(uint chr_id, byte arg2);
     public static FhMethodHandle<d_TOBtlDeleteATBChr> TOBtlDeleteATBChr
-        => new(new FhMethodLocation("FFX-2.exe", 0x356570));
+        => new(new FhMethodLocation("FFX-2.exe", 0x3564a0));
 
     // Delegate reviewed
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_MsCloseRapidShotWindow(uint chr_id);
     public static FhMethodHandle<d_MsCloseRapidShotWindow> MsCloseRapidShotWindow
-        => new(new FhMethodLocation("FFX-2.exe", 0x2474A0));
+        => new(new FhMethodLocation("FFX-2.exe", 0x247470));
+
+    /*
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate uint d_FUN_00634AD0(Chr* chr);
+    public static FhMethodHandle<d_FUN_00634AD0> FUN_00634AD0
+        => new(new FhMethodLocation("FFX-2.exe", 0x234AD0));*/
 
     public ATBFillModule() { }
 
@@ -62,6 +69,7 @@ public unsafe partial class ATBFillModule : FhModule {
         return _MsAutoConfuseProcess.chain_from(h_MsAutoConfuseProcess).fnptr!(chr_id);
     }
     
+    /* was used for providing certain control under Berserk Functionality
     public uint h_MsATBcommandClose(uint chr_id, byte status) {
 
         Chr* pCVar1;
@@ -71,22 +79,44 @@ public unsafe partial class ATBFillModule : FhModule {
         // Berserk and Confusion
         if ((status & 2) != 0)
         {
-
             if (chr_id < 10)
             {
-                PlySave ply_save = *MsGetSavePlayerPtr.fnptr!(chr_id);
-                if ((chr_id < 10) && (ply_save.equipped_accessory[0] == 0x907B || ply_save.equipped_accessory[1] == 0x907B))
-                {
-                    // do nothing
-                }
-                else
-                {
-                    TOBtlDeleteATBChr.fnptr!(chr_id, 0);
-                    if (*(byte*)((int)pCVar1 + 0xe68) == 4)
-                    {
 
-                        *(byte*)((int)pCVar1 + 0xe68) = 0;
-                    }
+                switch (chr_id)
+                {
+                    case 0:
+                        if (!y_mp_rage)
+                        {
+                            TOBtlDeleteATBChr.fnptr!(chr_id, 0);
+                            if (*(byte*)((int)pCVar1 + 0xe68) == 4)
+                            {
+
+                                *(byte*)((int)pCVar1 + 0xe68) = 0;
+                            }
+                        }
+                        break;
+                    case 1:
+                        if (!r_mp_rage)
+                        {
+                            TOBtlDeleteATBChr.fnptr!(chr_id, 0);
+                            if (*(byte*)((int)pCVar1 + 0xe68) == 4)
+                            {
+
+                                *(byte*)((int)pCVar1 + 0xe68) = 0;
+                            }
+                        }
+                        break;
+                    case 2:
+                        if (!p_mp_rage)
+                        {
+                            TOBtlDeleteATBChr.fnptr!(chr_id, 0);
+                            if (*(byte*)((int)pCVar1 + 0xe68) == 4)
+                            {
+
+                                *(byte*)((int)pCVar1 + 0xe68) = 0;
+                            }
+                        }
+                        break;
                 }
             }
             else
@@ -105,11 +135,12 @@ public unsafe partial class ATBFillModule : FhModule {
         }
         return 0;
 
-    }
+    }*/
 
-    public uint h_FUN_00634B00(Chr* param_1) {
+    
+    public uint h_FUN_00634AD0(Chr* param_1) {
         /* -- restore this for vanilla turn-based to fix Yojimbo's Daigoro not taking action
-        uint original_result = FFX2.FhCall.FUN_00634B00.chain_from(h_FUN_00634B00).fnptr!(param_1);
+        uint original_result = FFX2.FhCall.FUN_00634AD0.chain_from(h_FUN_00634AD0).fnptr!(param_1);
 
         if (original_result == 1)
         {
@@ -127,9 +158,10 @@ public unsafe partial class ATBFillModule : FhModule {
         {
             return 0;
         }*/
-
-        return FFX2.FhCall.FUN_00634B00.chain_from(h_FUN_00634B00).fnptr!(param_1);
+    
+        return FFX2.FhCall.FUN_00234ad0.chain_from(h_FUN_00634AD0).fnptr!(param_1);
     }
+        
 
     // vanilla implementation ready for changes if required -- NOT HOOKED, uncomment in init() if required.
     public void h_MsChrATBprocess() {
@@ -160,7 +192,7 @@ public unsafe partial class ATBFillModule : FhModule {
             isEnemy = (int)FFX2.FhCall.MsGetRamChrMonster.fnptr!((byte)uVar8);
 
             if (isEnemy == 1) {
-                byte DAT_00df78bb = FhUtil.get_at<byte>(0x9f78bb);
+                byte DAT_00df78bb = FhUtil.get_at<byte>(0x9F68BB);
                 if (DAT_00df78bb != 0 || *(byte*)(iVar5 + 0x1789) == 0) {
 
                     chr = FFX2.FhCall.MsGetChr.fnptr!(uVar8 & 0xff);
@@ -173,15 +205,15 @@ public unsafe partial class ATBFillModule : FhModule {
                     *(int*)(iVar5 + 0x9fc) = 0;
                 }
                 else {
-                    uint DAT_00df8818 = FhUtil.get_at<uint>(0x9f8818);
-                    uint DAT_00df881c = FhUtil.get_at<uint>(0x9f881c);
+                    uint DAT_00df8818 = FhUtil.get_at<uint>(0x9F7818);
+                    uint DAT_00df881c = FhUtil.get_at<uint>(0x9F781C);
                     // Sets chr speed values depending on haste/slow, applies on-hit slow effect, DF8818 is the ATB speed pulled from the config setting
                     h_MsChrSetDecTime(uVar8, chr, DAT_00df8818);
                     *(int*)(iVar5 + 0x9fc) = (int)DAT_00df881c;
                 }
             }
             if (isEnemy == 0) {
-                byte DAT_00df78ba = FhUtil.get_at<byte>(0x9f78ba);
+                byte DAT_00df78ba = FhUtil.get_at<byte>(0x9F68BA);
                 if (DAT_00df78ba != 0 || *(byte*)(iVar5 + 0x1789) == 0) {
                     chr = FFX2.FhCall.MsGetChr.fnptr!(uVar8 & 0xff);
                     iVar5 = (int)chr;
@@ -192,8 +224,8 @@ public unsafe partial class ATBFillModule : FhModule {
                     *(int*)(iVar5 + 0x9fc) = 0;
                 }
                 else {
-                    uint DAT_00df8818 = FhUtil.get_at<uint>(0x9f8818);
-                    uint DAT_00df881c = FhUtil.get_at<uint>(0x9f881c);
+                    uint DAT_00df8818 = FhUtil.get_at<uint>(0x9F7818);
+                    uint DAT_00df881c = FhUtil.get_at<uint>(0x9F781C);
                     // Sets chr speed values depending on haste/slow, applies on-hit slow effect, DF8818 is the ATB speed pulled from the config setting
                     h_MsChrSetDecTime(uVar8, chr, DAT_00df8818);
                     *(int*)(iVar5 + 0x9fc) = (int)DAT_00df881c;
@@ -203,15 +235,15 @@ public unsafe partial class ATBFillModule : FhModule {
 
             uVar8 = uVar8 + 1;
             if (0x1e < (int)uVar8) {
-                int* DAT_00df7f90 = FhUtil.ptr_at<int>(0x9F7F90);
+                int* DAT_00df7f90 = FhUtil.ptr_at<int>(0x9F6F90);
                 //data for if check
-                byte DAT_00df8814 = FhUtil.get_at<byte>(0x9F8814);
-                byte DAT_00df8816 = FhUtil.get_at<byte>(0x9F8816);
+                byte DAT_00df8814 = FhUtil.get_at<byte>(0x9F7814);
+                byte DAT_00df8816 = FhUtil.get_at<byte>(0x9F7816);
                 //sub-menu open Wait flag
-                byte DAT_00df8817 = FhUtil.get_at<byte>(0x9F8817);
-                byte DAT_00df78a0 = FhUtil.get_at<byte>(0x9F78A0);
-                byte DAT_00df78a3 = FhUtil.get_at<byte>(0x9F78A3);
-                byte DAT_00df78a4 = FhUtil.get_at<byte>(0x9F78A4);
+                byte DAT_00df8817 = FhUtil.get_at<byte>(0x9F7817);
+                byte DAT_00df78a0 = FhUtil.get_at<byte>(0x9F68A0);
+                byte DAT_00df78a3 = FhUtil.get_at<byte>(0x9F68A3);
+                byte DAT_00df78a4 = FhUtil.get_at<byte>(0x9F68A4);
 
                 FFX2.FhCall.MsMagicCheckCommandExe.fnptr!((int)DAT_00df7f90, 0xff, local_8c, &local_90);
                 bVar3 = true;
@@ -267,18 +299,18 @@ public unsafe partial class ATBFillModule : FhModule {
                                 else {
                                     cVar9 = *(char*)(iVar10 + 0xe69);
                                     iVar5 = (int)FFX2.FhCall.MsGetRamChrMonster.fnptr!((byte)(uVar8 & 0xff));
-                                    byte DAT_00df78bf = FhUtil.get_at<byte>(0x9f78bf);
+                                    byte DAT_00df78bf = FhUtil.get_at<byte>(0x9F68BF);
                                     cVar2 = DAT_00df78bf;
                                     // Control Creatures debug flag check
                                     if (iVar5 != 0) {
-                                        byte DAT_00df78be = FhUtil.get_at<byte>(0x9f78be);
+                                        byte DAT_00df78be = FhUtil.get_at<byte>(0x9F68BE);
                                         cVar2 = DAT_00df78be;
                                         // Control Enemies debug flag check
                                     }
                                     if (cVar2 != '\0') {
                                         cVar9 = '\x01';
                                     }
-                                    int DAT_00e13434 = FhUtil.get_at<int>(0xA13434);
+                                    int DAT_00e13434 = FhUtil.get_at<int>(0xA12434);
                                     if (((*(uint*)(iVar10 + 0x434) & 0x40) != 0) && (DAT_00e13434 == 0)) {
                                         cVar9 = '\x04';
                                         *(byte*)(iVar10 + 0xE68) = 7;
@@ -287,19 +319,9 @@ public unsafe partial class ATBFillModule : FhModule {
                                     // Berserk
                                     if (((*(uint*)(iVar10 + 0x434) & 0x80) != 0) && (DAT_00e13434 == 0)) {
 
-                                        PlySave ply_save = *MsGetSavePlayerPtr.fnptr!(uVar8);
+                                        cVar9 = '\x04';
+                                        *(byte*)(iVar10 + 0xE68) = 8;
 
-                                        if (ply_save.equipped_accessory[0] == 0x907B || ply_save.equipped_accessory[1] == 0x907B)
-                                        {
-                                            //*(byte*)(iVar10 + 0xe68) = 4;
-                                            //FFX2.FhCall.TOBtlSetATBChr.fnptr!((byte)uVar8);
-                                            cVar9 = '\x01';
-                                        }
-                                        else
-                                        {
-                                            cVar9 = '\x04';
-                                            *(byte*)(iVar10 + 0xE68) = 8;
-                                        }
                                     }
 
                                     if (cVar9 == '\x01') {
@@ -373,15 +395,15 @@ public unsafe partial class ATBFillModule : FhModule {
 
         if (character_state == 0) {
             //need a pointer to this memory address for (h_MsMagicCheckCommandExe) first parameter
-            int* DAT_00DF7F90 = FhUtil.ptr_at<int>(0x9F7F90);
+            int* DAT_00DF7F90 = FhUtil.ptr_at<int>(0x9F6F90);
             //data for if check
-            byte DAT_00DF8814 = FhUtil.get_at<byte>(0x9F8814);
-            byte DAT_00DF8816 = FhUtil.get_at<byte>(0x9F8816);
+            byte DAT_00DF8814 = FhUtil.get_at<byte>(0x9F7814);
+            byte DAT_00DF8816 = FhUtil.get_at<byte>(0x9F7816);
             //sub-menu open Wait flag
-            byte DAT_00DF8817 = FhUtil.get_at<byte>(0x9F8817);
-            byte DAT_00DF78A0 = FhUtil.get_at<byte>(0x9F78A0);
-            byte DAT_00DF78A3 = FhUtil.get_at<byte>(0x9F78A3);
-            byte DAT_00DF78A4 = FhUtil.get_at<byte>(0x9F78A4);
+            byte DAT_00DF8817 = FhUtil.get_at<byte>(0x9F7817);
+            byte DAT_00DF78A0 = FhUtil.get_at<byte>(0x9F68A0);
+            byte DAT_00DF78A3 = FhUtil.get_at<byte>(0x9F68A3);
+            byte DAT_00DF78A4 = FhUtil.get_at<byte>(0x9F68A4);
 
             //FUN_00644bb0(&DAT_00df7f90, 0xff, &param_2, &local_8);
             FFX2.FhCall.MsMagicCheckCommandExe.fnptr!((int)DAT_00DF7F90, 0xFF, (int*)&chr_base_address, &local_8);
@@ -410,7 +432,7 @@ public unsafe partial class ATBFillModule : FhModule {
              * - these statuses affect the speed value
              * in ChrAtbSpeedHandler*/
             //iVar2 is the character's base address stored in a var
-            fill_check_bravo = (int)h_FUN_00634B00(iVar2);/*this function checks if character is Active, Alive and the if the character's speed value (if 0 (i.e Stopped)). 
+            fill_check_bravo = (int)h_FUN_00634AD0(iVar2);/*this function checks if character is Active, Alive and the if the character's speed value (if 0 (i.e Stopped)). 
                                         * If not stopped etc - returns 1
                                         * otherwise returns 0
                                          */
@@ -463,7 +485,7 @@ public unsafe partial class ATBFillModule : FhModule {
         if (*(int*)((int)iVar2 + 0x9f4) < 1) {
             //usually 1 so does run most of the time
             if (iVar3 != 0) {
-                iVar3 = (int)h_FUN_00634B00(iVar2);
+                iVar3 = (int)h_FUN_00634AD0(iVar2);
                 if (iVar3 != 0 && param_4 < 0x1F) {
 
                     //updates some table with the chr_id
@@ -505,7 +527,7 @@ public unsafe partial class ATBFillModule : FhModule {
             for (int i = 0; i < can_fill_array.Length; i++) {
                 Chr* chr = FFX2.FhCall.MsGetChr.fnptr!((uint)i);
                 int chr_base_addr = (int)chr;
-                can_fill_array[i] = (int)h_FUN_00634B00(chr); // fill up can_fill array
+                can_fill_array[i] = (int)h_FUN_00634AD0(chr); // fill up can_fill array
 
                 //alter can_fill array
                 if (can_fill_array[i] == 0) {
@@ -555,7 +577,7 @@ public unsafe partial class ATBFillModule : FhModule {
                 Chr* chr3 = FFX2.FhCall.MsGetChr.fnptr!((uint)winningIndex);
                 int winningIndexChrBase = (int)chr3;
 
-                if (h_FUN_00634B00(chr3) == 1)
+                if (h_FUN_00634AD0(chr3) == 1)
                 { 
                     chrCanAct = true;
                 }
@@ -569,8 +591,8 @@ public unsafe partial class ATBFillModule : FhModule {
                 // This else block handles situations where NO character can act, due to debugs flags, or all being Asleep or Stopped.
                 
                 // Debug flag handling
-                bool debugAlliesDisabled = FhUtil.get_at<byte>(0x9F78BA) == 1;
-                bool dbgEnemiesDisabled = FhUtil.get_at<byte>(0x9F78BB) == 1;
+                bool debugAlliesDisabled = FhUtil.get_at<byte>(0x9F68BA) == 1;
+                bool dbgEnemiesDisabled = FhUtil.get_at<byte>(0x9F68BB) == 1;
                 if(debugAlliesDisabled && dbgEnemiesDisabled) { chrCanAct = true;  }
 
                 // Status handling
@@ -578,9 +600,9 @@ public unsafe partial class ATBFillModule : FhModule {
                     TbCantActStatusProcess(x);
                     Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(x);
                     int chr_addr = (int)chr;
-                    uint base_atb_value = FhUtil.get_at<uint>(0x9f8818);
+                    uint base_atb_value = FhUtil.get_at<uint>(0x9F7818);
                     h_MsChrSetDecTime(x, chr, base_atb_value); // recalculate the units ATB speed value - 0 -> no fill, 95 -> can fill again
-                    if (h_FUN_00634B00(chr) == 1) { //h_bravo checks flags, and chrs ATB fill speed value
+                    if (h_FUN_00634AD0(chr) == 1) { //h_bravo checks flags, and chrs ATB fill speed value
                         chrCanAct = true;
                         break;
                     }
@@ -643,8 +665,8 @@ public unsafe partial class ATBFillModule : FhModule {
         && FFX2.FhCall.MsChrSetDecTime.hook(this, h_MsChrSetDecTime)
         && _MsAutoConfuseProcess.hook(this, h_MsAutoConfuseProcess)
 
-        && FFX2.FhCall.FUN_00634B00.hook(this, h_FUN_00634B00)
-        && MsATBcommandClose.hook(this, h_MsATBcommandClose);
+        && FFX2.FhCall.FUN_00234ad0.hook(this, h_FUN_00634AD0);
+        //&& MsATBcommandClose.hook(this, h_MsATBcommandClose);
         //&& FFX2.FhCall.MsCheckMonsterOversoul.hook(this, h_MsCheckMonsterOversoul)
         //&& FFX2.FhCall.MsCheckDanceStatus.hook(this, h_MsCheckDanceStatus)
         //&& FFX2.FhCall.MsClearDanceStatusMotion.hook(this, h_MsClearDanceStatusMotion)

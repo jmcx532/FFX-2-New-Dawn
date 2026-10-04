@@ -4,14 +4,14 @@
 public class AtelMotionModule : FhModule {
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public unsafe delegate uint d_Ch_GetSysMotionID(Actor* arg1, int arg2, uint atel_motion_num);
+    public unsafe delegate uint d_Ch_GetSysMotionID(FFX2.Actor* arg1, int arg2, uint atel_motion_num);
     public FhMethodHandle<d_Ch_GetSysMotionID> Ch_GetSysMotionID
-        => new(new FhMethodLocation("FFX-2.exe", 0x2d1720));
+        => new(new FhMethodLocation("FFX-2.exe", 0x2d1640));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_MsSetRamChrData();
     public FhMethodHandle<d_MsSetRamChrData> MsSetRamChrData
-        => new(new FhMethodLocation("FFX-2.exe", 0x226f40));
+        => new(new FhMethodLocation("FFX-2.exe", 0x226f10));
 
     public unsafe void h_MsSetRamChrData()
     {
@@ -63,7 +63,7 @@ public class AtelMotionModule : FhModule {
 
 
         // In battle handling
-        uint BtlChrPtr = FhUtil.get_at<uint>(0xa0fbac);
+        uint BtlChrPtr = FhUtil.get_at<uint>(0xA0EBAC);
         if (BtlChrPtr != 0)
         {
 
@@ -122,6 +122,8 @@ public class AtelMotionModule : FhModule {
             && MsSetRamChrData.hook(this, h_MsSetRamChrData);
     }
 
+
+    /*
     public override void render_imgui()
     {
 
@@ -135,7 +137,7 @@ public class AtelMotionModule : FhModule {
         }
 
         ImGui.End();
-    }
+    }*/
 
     public override void load_local_state(FileStream? local_state_file, FhLocalStateInfo local_state_info)
     {

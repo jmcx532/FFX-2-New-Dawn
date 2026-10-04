@@ -111,13 +111,13 @@ public unsafe partial class ATBRecoveryModule : FhModule {
                     if ((uVar7 & 4) != 0) {
                         /* Reads rom.bin count_value (the first one) */
                         //iVar9 = DAT_00df8e84;
-                        iVar9 = (int)FhUtil.get_at<uint>(0x9f8e84);
+                        iVar9 = (int)FhUtil.get_at<uint>(0x9F7E84);
                     }
                     bVar10 = (uVar7 & 8) != 0;// is true if under some status, but uVar7 changes ^^^ different iterator
                     if (bVar10) {
                         // Reads rom.bin count_value (the second one) -- for Doom?
                         //iVar9 = DAT_00df8e88;
-                        iVar9 = (int)FhUtil.get_at<uint>(0x9f8e88);
+                        iVar9 = (int)FhUtil.get_at<uint>(0x9F7E88);
                     }
 
 
@@ -159,7 +159,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
                             *(byte*)(chr_base + 0x4b4 + uVar4) = (byte)iVar5;
                             if (iVar5 <= (int)local_48) {
                                 local_28 = local_28 + 1;
-                                FFX2.FhCall.FUN_00636690.fnptr!(chr_id, chr, (byte)uVar7);
+                                FFX2.FhCall.FUN_00236660.fnptr!(chr_id, chr, (byte)uVar7);
                             }
                         }
                     }

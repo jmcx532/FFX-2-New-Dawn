@@ -16,7 +16,7 @@ public partial class X2DSUnlimitModule : FhModule {
     public void h_MsBtlChrGetMem() {
 
         FFX2.FhCall.MsBtlChrGetMem.chain_from(h_MsBtlChrGetMem).fnptr!();
-        system_01_addr = FhUtil.get_at<nint>(0x9F882C); 
+        system_01_addr = FhUtil.get_at<nint>(0x9F782C); 
 
     }
 
@@ -74,7 +74,7 @@ public partial class X2DSUnlimitModule : FhModule {
 
         FFX2.FhCall.TOCtrlATBChr.chain_from(h_TOCtrlATBChr).fnptr!();
 
-        byte chr_window_open = FhUtil.get_at<byte>(0xdb747c);
+        byte chr_window_open = FhUtil.get_at<byte>(0xDB647C);
         Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_window_open);
         int chr_base = (int)chr;
 
@@ -86,8 +86,8 @@ public partial class X2DSUnlimitModule : FhModule {
 
     //62ab30, 710026cc90 - btsSoundStreamNormal?
     // Usage: Play relevant character's SFX instead of YRP's
-    public unsafe uint h_FUN_62AB30(uint chr_id, uint sound_id) {
-        uint original_result = FFX2.FhCall.FUN_0062AB30.chain_from(h_FUN_62AB30).fnptr!(chr_id, sound_id);
+    public unsafe uint h_FUN_62AB10(uint chr_id, uint sound_id) {
+        uint original_result = FFX2.FhCall.FUN_0022ab10.chain_from(h_FUN_62AB10).fnptr!(chr_id, sound_id);
         Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
         int chr_base_addr = (int)chr;
         int chr_model = *(int*)(chr_base_addr + 4);
@@ -129,7 +129,7 @@ public partial class X2DSUnlimitModule : FhModule {
     /// <param name="param_7"></param>
     /// <param name="param_8"></param>
     /// <param name="param_9"></param> //pointer to start of VoiceIDMapper.txt
-    public unsafe void h_FUN_534A70(int* param_1, int voice_integer, int param_3, int param_4,/*FMODCHANNELINDEX*/ int param_5, int param_6, int* param_7, int* param_8, int* param_9) {
+    public unsafe void h_FUN_534BD0(int* param_1, int voice_integer, int param_3, int param_4,/*FMODCHANNELINDEX*/ int param_5, int param_6, int* param_7, int* param_8, int* param_9) {
         
         Chr* y_chr = FFX2.FhCall.MsGetChr.fnptr!(0);
         Chr* r_chr = FFX2.FhCall.MsGetChr.fnptr!(1);
@@ -201,7 +201,7 @@ public partial class X2DSUnlimitModule : FhModule {
 
         }
 
-        FFX2.FhCall.FUN_00534A70.chain_from(h_FUN_534A70).fnptr!(param_1, voice_integer, param_3, param_4,/*FMODCHANNELINDEX*/ param_5, param_6, param_7, param_8, param_9);
+        FFX2.FhCall.FUN_00134bd0.chain_from(h_FUN_534BD0).fnptr!(param_1, voice_integer, param_3, param_4,/*FMODCHANNELINDEX*/ param_5, param_6, param_7, param_8, param_9);
     }
 
 }
