@@ -322,7 +322,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
 
     // returns true if chr_id is being targeted
     public bool IsTargeted(uint chr_id) {
-        uint targeted_chrs_field = FhUtil.get_at<uint>(0xDB54B8);
+        uint targeted_chrs_field = FhUtil.get_at<uint>(0xdb64B8);
         uint[] targeted_chrs = new uint[31];
 
         for (int i = 0;i < targeted_chrs.Length; i++) {
@@ -339,8 +339,8 @@ public unsafe partial class ATBRecoveryModule : FhModule {
 
     //returns the id of which command is being hovered over, used to update the view when current character hovers over different commands
     ushort GetHoveredCommand() {
-        ushort sub  = FhUtil.get_at<ushort>(0xDB5388);
-        ushort main = FhUtil.get_at<ushort>(0xDB5380);
+        ushort sub  = FhUtil.get_at<ushort>(0xdb6388);
+        ushort main = FhUtil.get_at<ushort>(0xdb6380);
 
         return (sub != 0x00FF && sub != 0xFF00)
             ? sub
@@ -394,7 +394,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
     // TURN ORDER WINDOW RENDERING --------------------------------------------------
     public override void render_imgui() {
         base.render_imgui();
-        int num_allies_ready = FhUtil.get_at<int>(0xDB4480);
+        int num_allies_ready = FhUtil.get_at<int>(0xDB6480);
 
         // if a player character has a turn - show the turn order window
         if (num_allies_ready != 0) {
