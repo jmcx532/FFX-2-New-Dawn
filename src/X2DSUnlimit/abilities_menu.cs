@@ -542,7 +542,7 @@ public partial class X2DSUnlimitModule : FhModule {
             }
 
             // Unmodded cases use vanilla behaviour
-            FFX2.FhCall.FUN_377190.chain_from(h_FUN_777190).fnptr!(param_1);
+            FFX2.FhCall.FUN_00377190.chain_from(h_FUN_777190).fnptr!(param_1);
 
         }
     }
@@ -885,10 +885,10 @@ public partial class X2DSUnlimitModule : FhModule {
         return (int)ability_list_data_ptr[finalSlot].ds_id;
     }
 
-
+    /*
     public unsafe byte* h_TOGetRomHelp(int param_1) {
         return FFX2.FhCall.TOGetRomHelp.chain_from(h_TOGetRomHelp).fnptr!(param_1);
-    }
+    }*/
 
 
     public unsafe void h_TkMenuSetHelpMessage(byte* param_1) {
@@ -925,7 +925,7 @@ public partial class X2DSUnlimitModule : FhModule {
 
             // if ability is visible, get ability help message
             if (ability.is_visible == 1) {
-                helpResult = h_TOGetRomHelp(ability.ability_id);
+                helpResult = FFX2.FhCall.TOGetRomHelp.fnptr!(ability.ability_id);
             }
 
         }

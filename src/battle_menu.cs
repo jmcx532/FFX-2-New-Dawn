@@ -93,16 +93,31 @@ public partial class BattleMenuModule : FhModule
     /// <summary>
     /// Draws icons and Command names in the Main battle Window, and the Escape Menu (NOT sub-menus)
     /// </summary>
-    /// <param name="cmd_id"></param>
+    /// <param name="com_id"></param>
     /// <param name="param_2"></param>
     /// <param name="param_3"></param>
-    /// <param name="param_4"></param>
+    /// <param name="com_disabled"></param>
     /// <param name="red"></param>
     /// <param name="green"></param>
     /// <param name="blue"></param>
     /// <param name="alpha"></param>
-    public unsafe void h_TOMkpComIconNameClutRGBA(uint cmd_id, int param_2, int param_3, uint param_4, byte red, byte green, byte blue, int alpha)
+    public unsafe void h_TOMkpComIconNameClutRGBA(uint com_id, int param_2, int param_3, uint com_disabled, byte red, byte green, byte blue, int alpha)
     {
+
+        int com_addr = _MsGetComData.fnptr!(com_id, (byte**)0);
+        byte com_mp_cost = *(byte*)(com_addr + 0x26);
+
+        float x_offset = 3.0f;
+        int y_offset = 3;
+        if (com_mp_cost > 0)
+        {
+            uint color = 0x80808080;
+            if (com_disabled == 1)
+            {
+                color = 0x40404040;
+            }
+            TOMkpValueRightPackRGBA.fnptr!(com_mp_cost, (int)(param_2 * x_offset), param_3 + y_offset, color);
+        }
 
         uint btl_menu_chr_id = FhUtil.get_at<uint>(0xDB647C);
         Chr* chr_pointer = FFX2.FhCall.MsGetChr.fnptr!(btl_menu_chr_id);
@@ -116,13 +131,13 @@ public partial class BattleMenuModule : FhModule
 
 
         // If a command style (e.g Black Magic has it's charge time (Vanilla) / recovery time (Turn-based mod) reduced, draw it's name in blue.
-        if (cmd_id == menu_to_reduce_wait1 || cmd_id == menu_to_reduce_wait2 || cmd_id == menu_to_reduce_wait3 || cmd_id == menu_to_reduce_wait4)
+        if (com_id == menu_to_reduce_wait1 || com_id == menu_to_reduce_wait2 || com_id == menu_to_reduce_wait3 || com_id == menu_to_reduce_wait4)
         {
-            TOMkpComIconNameClutRGBA.chain_from(h_TOMkpComIconNameClutRGBA).fnptr!(cmd_id, param_2, param_3, param_4, 30, 144, 255, alpha);
+            TOMkpComIconNameClutRGBA.chain_from(h_TOMkpComIconNameClutRGBA).fnptr!(com_id, param_2, param_3, com_disabled, 30, 144, 255, alpha);
         }
         else
         {
-            TOMkpComIconNameClutRGBA.chain_from(h_TOMkpComIconNameClutRGBA).fnptr!(cmd_id, param_2, param_3, param_4, red, green, blue, alpha);
+            TOMkpComIconNameClutRGBA.chain_from(h_TOMkpComIconNameClutRGBA).fnptr!(com_id, param_2, param_3, com_disabled, red, green, blue, alpha);
 
         }
 

@@ -340,11 +340,13 @@ public partial class MonPrivVarsModule : FhModule
     private uint var_num = 0;
     private uint some_idx = 0;
     private int integer_value = 0;
+
+#if DEBUG
     public unsafe override void render_imgui()
     {
         int btl_chr_pointer = FhUtil.get_at<int>(0xA0EBAC);
 
-        if (btl_chr_pointer != 0) {
+        if (btl_chr_pointer != 0 ) {
 
             ImGui.Begin("726cd0 Tester", ImGuiWindowFlags.NoFocusOnAppearing);
 
@@ -414,6 +416,7 @@ public partial class MonPrivVarsModule : FhModule
         }
             
     }
+#endif
 
     public override bool init(FhModContext mod_context, FileStream global_state_file)
     {

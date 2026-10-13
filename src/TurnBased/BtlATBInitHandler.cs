@@ -3,11 +3,12 @@
  * Sets ATB to 0 for pre-emptive strikes normally
  */
 
-
 namespace Fahrenheit.Modules.FFX2TurnBased;
 
 [FhLoad(FhGameId.FFX2)]
 public unsafe class PreEmptiveModule : FhModule {
+
+    public const byte TIME_TRIP_MP_COST = 10;
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int MsGetComData(uint command_id, int* param_2);
@@ -16,7 +17,7 @@ public unsafe class PreEmptiveModule : FhModule {
         new(new FhMethodLocation("FFX-2.exe", 0x225130));
 
     public PreEmptiveModule() { }
-
+        
     //this function returns the base address for commands -- AND OTHER EXCEL DATA - look through its sub-functions
     /*param_1 is the command id (e.g 0x3002)
     public unsafe int h_MsGetComData(uint command_id, int* param_2) {
@@ -136,7 +137,7 @@ public unsafe class PreEmptiveModule : FhModule {
             //set its com_dark_flag to false - this makes it drain MP again not HP
             *(int*)(tt_exp_data + 0x14) &= ~(1 << 28);
             //Restore MP cost to default
-            *(byte*)(tt_mp_cost + 0x26) = 20;
+            *(byte*)(tt_mp_cost + 0x26) = TIME_TRIP_MP_COST;
         }
    
      }

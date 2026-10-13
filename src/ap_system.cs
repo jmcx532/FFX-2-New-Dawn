@@ -80,7 +80,7 @@ public partial class APSystemModule : FhModule {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate byte d_TOBtlOpenFukidashiWinStealGil(uint user_id, byte param_2, uint gil_stolen);
     public static FhMethodHandle<d_TOBtlOpenFukidashiWinStealGil> TOBtlOpenFukidashiWinStealGil
-        => new(new FhMethodLocation("FFX-2.exe", 0x35C040));
+        => new(new FhMethodLocation("FFX-2.exe", 0x35BF90));
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_MsUseChrMP(uint chr_id, uint cmd_id, int amount);
@@ -103,28 +103,21 @@ public partial class APSystemModule : FhModule {
     ///     Main helper MP restoration function.
     /// </summary>
     /// <param name="chr_id"></param>
-    /// <param name="amount"></param>
+    /// <param name="amount">Negative values for 'amount' heal, positive values damage MP.</param>
     public unsafe void APRestoreMP(uint chr_id, int amount)
     {
 
-        // Restore 1 MP on turn start
+        // Create DamageBuffer and pointer
         DamageBuffer buffer = new();
         DamageBuffer* dBuffer = &buffer;
 
-        //FFX2.FhCall.MsStructClear.fnptr!(dBuffer, 0x14); -- LOL, why did I ever think this was necessary?
-
+        // assign values
         buffer.com_id = 0xff;
         buffer.target_stat = 0x02;
         buffer.chr_id = (byte)chr_id;
         buffer.damage_mp = amount;
 
-        /* Ragnarok increases MP gain by 1
-        PlySave chr_ply_save = *(PlySave*)MsGetSavePlayerPtr.fnptr!(chr_id);
-        if (chr_ply_save.equipped_accessory[0] == 0x907D || chr_ply_save.equipped_accessory[1] == 0x907D)
-        {
-            buffer.damage_mp = amount - 1;
-        }*/
-
+        // Ragnarok/MP Booster auto-ability alters the amount
         if (chr_id == 0 && y_mp_booster)
         {
             buffer.damage_mp = amount - 1;
@@ -138,11 +131,12 @@ public partial class APSystemModule : FhModule {
             buffer.damage_mp = amount - 1;
         }
 
-        FFX2.FhCall.MsDamageBufferExe.fnptr!(chr_id, chr_id, dBuffer);//6422d0
+        // execute the DamageBuffer
+        FFX2.FhCall.MsDamageBufferExe.fnptr!(chr_id, chr_id, dBuffer);
     }
 
     /// <summary>
-    ///     When Dressphere growth alogrithms are read, force max MP to be 10.
+    ///     When Dressphere growth alogrithms are read, force base max MP to be 10.
     /// </summary>
     /// <param name="chr_id"></param>
     /// <param name="chr_level"></param>
@@ -157,7 +151,7 @@ public partial class APSystemModule : FhModule {
     }
 
     /// <summary>
-    ///     Read character auto-abilities and set flags.
+    ///     Read character auto-abilities and set Local State flags.
     ///     On battle start, force character's current MP to be 3. (Only works for player characters)
     /// </summary>
     /// <param name="chr_id"></param>
@@ -169,6 +163,7 @@ public partial class APSystemModule : FhModule {
         Chr* ptr_chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
         uint chr_addr = (uint)ptr_chr; 
 
+        // set Local State flags to false and set current MP to 3.
         if (chr_id == 0)
         {
             y_mp_booster = false;
@@ -191,11 +186,13 @@ public partial class APSystemModule : FhModule {
             *(uint*)(chr_addr + 0x3b8) = 3; // Starting MP is 3
         }
 
+        // cycle over auto-abilities list
         ushort* ptr_a_ability_list = FhUtil.ptr_at<ushort>(0x9F8278);
         for (int i = 0; i < 32; i++)
         {
-            ushort a_ability = ptr_a_ability_list[i];
+            ushort a_ability = ptr_a_ability_list[i]; // candidate
 
+            // MP Booster / Ragnarok
             if (a_ability == 0x8071)
             {
                 switch (chr_id)
@@ -212,6 +209,7 @@ public partial class APSystemModule : FhModule {
                 }
             }
 
+            // MP Rage / Cat Nip
             if (a_ability == 0x807A)
             {
                 switch (chr_id)
@@ -234,6 +232,14 @@ public partial class APSystemModule : FhModule {
         }
     }
 
+    /// <summary>
+    ///     Set Local State flag on spherechange - handle Garment Grid gate activation.
+    /// </summary>
+    /// <param name="chr_id"></param>
+    /// <param name="arg2"></param>
+    /// <param name="ability_id"></param>
+    /// <param name="arg4"></param>
+    /// <returns></returns>
     public uint h_kySetSkill(uint chr_id, uint arg2, uint ability_id, uint arg4)
     {
         uint original_result = kySetSkill.chain_from(h_kySetSkill).fnptr!(chr_id, arg2, ability_id, arg4);
@@ -276,7 +282,10 @@ public partial class APSystemModule : FhModule {
 
     }
 
-    // Restore 1 MP on turn start.
+    /// <summary>
+    ///     Restore 1 MP on turn start.
+    /// </summary>
+    /// <param name="chr_id"></param>
     public unsafe void h_TOBtlSetATBChr(byte chr_id)
     {
         FFX2.FhCall.TOBtlSetATBChr.chain_from(h_TOBtlSetATBChr).fnptr!(chr_id);
@@ -290,6 +299,8 @@ public partial class APSystemModule : FhModule {
 
         uint chr_addr = (uint)FFX2.FhCall.MsGetChr.fnptr!(chr_id);
 
+        ushort com_last_used = *(ushort*)(chr_addr + 0x870);
+
         // Restore MP to character on turn start - Yuna Freelancer (Leblanc gets 2 MP)
         ushort current_dressphere = *(ushort*)(chr_addr + 0x86a);
         if (chr_id == 0 && current_dressphere == 0x5020)
@@ -298,7 +309,12 @@ public partial class APSystemModule : FhModule {
         }
         else
         {
-            APRestoreMP(chr_id, -1);
+            
+            if (com_last_used != 0x31ea) // Doesn't restore MP if Time Trip was used - that command refills MP
+            {
+                APRestoreMP(chr_id, -1);
+            }
+            
         }
         
 
@@ -479,7 +495,7 @@ public partial class APSystemModule : FhModule {
         uint com_exp_data = *(uint*)(pCVar2 + 0x14);
         bool com_dark = (com_exp_data & 0x10000000) != 0;
 
-
+        // For commands that expend HP instead of MP
         if (com_dark)
         {
             uVar3 = (uint)FhCall.MsCheckRange.fnptr!(*(int*)(iVar1 + 0x3b4) - amount, 0, *(int*)(iVar1 + 0x384));
@@ -487,13 +503,22 @@ public partial class APSystemModule : FhModule {
             APRestoreMP(chr_id, -1);
             return;
         }
+
+        // For commands that use MP
         uVar3 = (uint)FhCall.MsCheckRange.fnptr!(*(int*)(iVar1 + 0x3b8) - amount, 0, *(int*)(iVar1 + 0x388));
         *(int*)(iVar1 + 0x3b8) = (int)uVar3;
         return;
 
     }
 
-    // On command finish, for Alchemist, restore 1 MP for each character hit with an item.
+    /// <summary>
+    ///     On command finish, for Alchemist, restore 1 MP for each character hit with an item.
+    ///     Using Time Trip (Psychic), replenishes MP.
+    /// </summary>
+    /// <param name="chr_id"></param>
+    /// <param name="param_2"></param>
+    /// <param name="param_3"></param>
+    /// <returns></returns>
     public unsafe uint h_MsCommandComplete(uint chr_id, int param_2, int param_3)
     {
 
@@ -501,9 +526,10 @@ public partial class APSystemModule : FhModule {
         int chr_addr = (int)chr;
 
         byte num_targets_hit = *(byte*)(chr_addr + 0xec2);
-        uint com_id = *(uint*)(param_3 + 0xa4);
+        ushort com_id = *(ushort*)(param_3 + 0xa4);
         uint job_id = FFX2.FhCall.MsGetSaveJob.fnptr!(chr_id);
 
+        // If Alchemist uses an Item, restore MP for each hit
         if (job_id == 0x5003)
         {
             if ((com_id & 0xF000) == 0x2000)
@@ -511,12 +537,31 @@ public partial class APSystemModule : FhModule {
                 APRestoreMP(chr_id, -num_targets_hit);
             }
         }
+
+        // If Time Trip is used, restore 10 MP.
+        if (com_id == 0x31ea)
+        {
+            APRestoreMP(chr_id, -10);
+        }
         
         return FFX2.FhCall.MsCommandComplete.chain_from(h_MsCommandComplete).fnptr!(chr_id, param_2, param_3);
     }
 
 
-    // some command / damage function - restore 1 MP on Attack, DK has chance to restore MP when damaged etc.
+    /// <summary>
+    /// some command / damage function - restore 1 MP on Attack, DK has chance to restore MP when damaged etc.
+    /// </summary>
+    /// <param name="user_id"></param>
+    /// <param name="user"></param>
+    /// <param name="target_id"></param>
+    /// <param name="target"></param>
+    /// <param name="cmd_id"></param>
+    /// <param name="cmd_addr"></param>
+    /// <param name="user_MsCommandGetTop"> CommandTop </param>
+    /// <param name="param_8"> DamageBufferStatus </param>
+    /// <param name="param_9"></param>
+    /// <param name="param_10"></param>
+    /// <param name="param_11"></param>
     public unsafe void h_FUN_6420C0(byte user_id, Chr* user, int target_id, Chr* target, uint cmd_id, uint cmd_addr, int user_MsCommandGetTop, DamageBufferStatus* param_8, uint param_9, int param_10, uint param_11) {
 
         FUN_6420C0.chain_from(h_FUN_6420C0).fnptr!(user_id, user, target_id, target, cmd_id, cmd_addr, user_MsCommandGetTop, param_8, param_9, param_10, param_11);

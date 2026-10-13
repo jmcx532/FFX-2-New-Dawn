@@ -366,13 +366,13 @@ public partial class X2DSUnlimitModule : FhModule {
             && FFX2.FhCall.TOMenuNextJobList.hook(this, h_TOMenuNextJobList)
             && FFX2.FhCall.TOMenuPrevJobList.hook(this, h_TOMenuPrevJobList)
 
-            && FFX2.FhCall.FUN_377b80.hook(this, h_FUN_777B80)
-            && FFX2.FhCall.TOGetRomHelp.hook(this, h_TOGetRomHelp)
+            && FFX2.FhCall.FUN_00377b80.hook(this, h_FUN_777B80)
+            //&& FFX2.FhCall.TOGetRomHelp.hook(this, h_TOGetRomHelp)
             && FFX2.FhCall.TkMenuSetHelpMessage.hook(this, h_TkMenuSetHelpMessage)
 
-            && FFX2.FhCall.FUN_378080.hook(this, h_FUN_778080)
-            && FFX2.FhCall.FUN_376de0.hook(this, h_FUN_776DE0)
-            && FFX2.FhCall.FUN_377190.hook(this, h_FUN_777190)
+            && FFX2.FhCall.FUN_00378080.hook(this, h_FUN_778080)
+            && FFX2.FhCall.FUN_00376de0.hook(this, h_FUN_776DE0)
+            && FFX2.FhCall.FUN_00377190.hook(this, h_FUN_777190)
             && FFX2.FhCall.TOMenuSetSaveLearn.hook(this, h_TOMenuSetSaveLearn);
     }
 

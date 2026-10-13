@@ -76,10 +76,10 @@ public partial class X2DSUnlimitModule : FhModule {
         y_festivalist.growth_strength.quadratic_div_a = 10;
         y_festivalist.growth_strength.quadratic_div_b = 1;
 
-        y_festivalist.growth_magic.linear_mult = 12;
-        y_festivalist.growth_magic.linear_div = 2;
-        y_festivalist.growth_magic.base_amount = 16;
-        y_festivalist.growth_magic.quadratic_div_a = 11;
+        y_festivalist.growth_magic.linear_mult = 21;
+        y_festivalist.growth_magic.linear_div = 66;
+        y_festivalist.growth_magic.base_amount = 19;
+        y_festivalist.growth_magic.quadratic_div_a = 10;
         y_festivalist.growth_magic.quadratic_div_b = 1;
 
         y_festivalist.growth_defense.linear_mult = 3;
