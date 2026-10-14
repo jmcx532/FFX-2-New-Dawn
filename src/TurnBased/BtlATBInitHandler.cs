@@ -117,7 +117,9 @@ public unsafe class PreEmptiveModule : FhModule {
             // When called from MsDamageCheckDeath which writes ATB on KO
             if (param_2 == 1 && param_3 == -1)
             {
-                *(int*)((int)(chr) + 0x9dc) = (*(int*)((int)(chr) + 0x9dc)) / 2;
+                
+                *(int*)((int)(chr) + 0x9dc) = (*(int*)((int)(chr) + 0x9dc)) / 2;// Length
+                *(int*)((int)(chr) + 0x9d8) = (*(int*)((int)(chr) + 0x9dc)); // Remaining
             }
 
         }

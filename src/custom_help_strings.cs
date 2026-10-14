@@ -37,7 +37,7 @@ public partial class CustomHelpStringsModule : FhModule
     private static nint[] command_help_strings = new nint[7];
     private static string[] _command_help_strings = [
         "Attack one enemy, piercing certain kinds of armor.", // P. Attack
-        "Press * repeatedly during allotted time for multiple hits. Hits have a chance to restore MP.", // Trigger Happy
+        "Press {BTN:33} repeatedly during allotted time for multiple hits. Hits have a chance to restore MP.", // Trigger Happy
         "Strike quickly with reduced recovery time.", // Quick Shot
         "Restore MP and raise the user's Strength and Accuracy.", // Nonpareil
         "Boost offenses at the cost of defense.", // Eclipse
@@ -100,6 +100,7 @@ public partial class CustomHelpStringsModule : FhModule
                 ptr_help = (byte*)command_help_strings[1];
                 break;
             case 0x306D:
+            case 0x31F5:
                 ptr_help = (byte*)command_help_strings[2];
                 break;
             case 0x3079:
@@ -173,6 +174,7 @@ public partial class CustomHelpStringsModule : FhModule
                     pkt->help_loc = command_help_strings[1];
                     break;
                 case 0x306D:
+                case 0x31F5:
                     pkt->help_loc = command_help_strings[2];
                     break;
                 case 0x3079:

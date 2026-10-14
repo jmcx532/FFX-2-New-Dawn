@@ -538,6 +538,12 @@ public partial class APSystemModule : FhModule {
             }
         }
 
+        // If Teleport is used, restore 1 MP.
+        if (com_id == 0x31ee)
+        {
+            APRestoreMP(chr_id, -11);
+        }
+
         // If Time Trip is used, restore 10 MP.
         if (com_id == 0x31ea)
         {

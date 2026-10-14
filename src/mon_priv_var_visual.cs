@@ -88,6 +88,10 @@ public partial class MonPrivVarsModule : FhModule
     public unsafe void h_TOMkpATBGauge(int chr_id, int x, int y, float fill, float length, uint status)
     {
 
+#if DEBUG
+        TOMkpATBGauge.chain_from(h_TOMkpATBGauge).fnptr!(chr_id, x, y, fill, length, status);
+#endif
+
         /*
         if (chr_id < 0xf)
         {

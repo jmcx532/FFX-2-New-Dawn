@@ -54,6 +54,7 @@ public partial class FormulasModule : FhModule
             PlySave* user_ply_save_ptr;
             int iVar2;
             PlySave* tgt_ply_save_ptr;
+            int tgt_chr_addr = (int)FFX2.FhCall.MsGetChr.fnptr!(tgt_chr_id);
             int iVar4;
             int final_damage;
 
@@ -228,6 +229,8 @@ public partial class FormulasModule : FhModule
 
                     final_damage = final_damage * (user_str_mod + stat_mod_const) / stat_mod_const;
                     final_damage = final_damage * (stat_mod_const + tgt_def_mod) / stat_mod_const;
+
+                    if (*(byte*)(tgt_chr_addr + 0x439) > 0) { final_damage = final_damage * 4; } // Protect cancels out and doubles damage
                 LAB_PHYS_AND_SPECIAL_MAGIC:
                     final_damage = final_damage * power / 16;
                     final_damage = final_damage * iVar4 / 256;
