@@ -142,7 +142,7 @@ public partial class X2DSUnlimitModule : FhModule {
         }
         return 0;
     }
-       
+
     // handle FL/LG setting ability to be learned
     public unsafe int h_MsSetSaveLearn(uint chr_id, uint job_id, ushort ability_id)
     {
@@ -294,7 +294,7 @@ public partial class X2DSUnlimitModule : FhModule {
         byte* DAT_00E00D1C = FhUtil.ptr_at<byte>(0x9ffD1C); // dressphere quantities memory region
         ds_id = ds_id & 0xfff;
 
-        
+
         if (ds_id > 0x1e) // Freelancer, Leblanc Goon handling
         {
             switch (ds_id)
@@ -310,7 +310,7 @@ public partial class X2DSUnlimitModule : FhModule {
 
         if (ds_id < 0x1e) // Vanilla behaviour
         {
-            quantity = FhCall.MsCheckRange.fnptr!(*(byte*)(DAT_00E00D1C + ds_id) + param_2, 0, 99);
+            quantity = int.Clamp(*(byte*)(DAT_00E00D1C + ds_id) + param_2, 0, 99);
             *(byte*)(DAT_00E00D1C + ds_id) = (byte)quantity;
             return quantity;
         }
@@ -378,7 +378,7 @@ public partial class X2DSUnlimitModule : FhModule {
 
     public override void load_local_state(FileStream? local_state_file, FhLocalStateInfo local_state_info)
     {
-        
+
         var loaded_state = JsonSerializer.Deserialize<X2DSUnlimitState>(local_state_file);
 
         if (loaded_state != null)

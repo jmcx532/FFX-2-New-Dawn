@@ -4,13 +4,13 @@
  * This class re-implements X-2's status handling through stubbing out MsStatusProcess
  * which is called continuously, and it's behaviour is replicated in another function
  * that can be called once at the appropriate time and process statuses
- * 
+ *
  */
 
 namespace Fahrenheit.Modules.FFX2TurnBased;
 public unsafe partial class ATBRecoveryModule : FhModule {
 
-    // Turn-based status handling 
+    // Turn-based status handling
     public void TbStatusProcess(uint chr_id) {
         uint ChrSpeedVal2;
         uint ChrSpeedVal3;
@@ -84,7 +84,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
                     *piVar8 = iVar5;// write the updates value
                 }
                 //uVar3 = uVar3 << 1 | (uint)((int)uVar3 < 0);
-                //uVar3 = (uVar3 << 1) | ((uVar3 & 0x80000000) >> 31); 
+                //uVar3 = (uVar3 << 1) | ((uVar3 & 0x80000000) >> 31);
                 uVar3 = (uVar3 << 1) | (uint)((int)uVar3 < 0 ? 1 : 0);// commented line replaced with this
 
                 uVar4 = uVar4 + 1;// increase iterator
@@ -154,7 +154,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
                             *local_30 = (short)(sVar1 - iVar9);
 
                             local_48 = bVar10 ? 1u : 0u; // bVar10 as a number
-                            iVar5 = FhCall.MsCheckRange.fnptr!((int)uVar3, (int)local_48, 0x7d); //624cd0
+                            iVar5 = int.Clamp((int)uVar3, (int)local_48, 0x7d);
                             /* Update decremented status value in Second set of Chr sbyte timed statuses */
                             *(byte*)(chr_base + 0x4b4 + uVar4) = (byte)iVar5;
                             if (iVar5 <= (int)local_48) {
@@ -200,7 +200,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
 
                     FFX2.FhCall.MsDamageBufferExe.fnptr!(chr_id, chr_id, pBuffer);//6422d0
 
-                    
+
                 }
             }
 
@@ -242,7 +242,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
         int* piVar8;
 
         uint chr_id = 0;
-        
+
         do {
             Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);// Get Chr base address
             int chr_base = (int)chr;
@@ -255,7 +255,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
                 ChrSpeedVal3 = *(uint*)(chr_base + 0x9ec);
                 ChrSpeedVal4 = *(uint*)(chr_base + 0x9f0);
 
-                //6430f0 
+                //6430f0
                 uVar3 = FFX2.FhCall.MsStatCheckStop.fnptr!((byte)chr_id, 0);// Gets a small bitfield that has bits set if character is asleep, petrified or stopped
 
                   // If under sleep/pet/stop - manipulate speed values - 0 ATB Fill, conditional anim modifier - sleep doesn't freeze, the other two do

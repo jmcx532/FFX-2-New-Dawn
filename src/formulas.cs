@@ -89,6 +89,11 @@ public partial class FormulasModule : FhModule
             PlySave user_ply_save = *(PlySave*)user_ply_save_ptr;
             PlySave tgt_ply_save = *(PlySave*)tgt_ply_save_ptr;
 
+            // MP records (for custom formulas)
+            int tgt_max_mp = *(int*)(tgt_chr_addr + 0x388);
+            int tgt_remaining_mp = *(int*)(tgt_chr_addr + 0x3B8);
+            int tgt_missing_mp = tgt_max_mp - tgt_remaining_mp;
+
             //start of command damage formula evaluation
             switch (cmd_dmg_formula)
             {
@@ -251,6 +256,21 @@ public partial class FormulasModule : FhModule
                         final_damage = final_damage + FhUtil.get_at<int>(0x9F7EA4);
                     }
                     break;
+                // Target current MP * 1000
+                case 25:
+                    final_damage = tgt_remaining_mp * 1000;
+                    break;
+                case 26:
+                    final_damage = tgt_missing_mp * 1000;
+                    break;
+                //Custom MP Missing damage formula
+                case 27:
+
+                    //final_damage = tgt_hp_max * power / 16;
+                    power = (power * 10) + (power * tgt_missing_mp); // mp effect
+                    final_damage = tgt_hp_max * power / 100;
+                    break;
+
             }//what is this one? param_11 and param_10 are only used here. No item, monmagic or command uses this
             if (cmd_dmg_formula == 0x15)
             {

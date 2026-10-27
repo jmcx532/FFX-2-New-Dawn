@@ -101,7 +101,7 @@ public partial class X2DSUnlimitModule : FhModule {
                 }
                 break;
         }
-    }    
+    }
 
     // reimplementation so job name string is read correctly from job.bin for C# defined jobs
     // Returns a memory address at which a null-terminated string is located.
@@ -137,7 +137,7 @@ public partial class X2DSUnlimitModule : FhModule {
     public unsafe void h_kySetHelpJob2(uint job_id) {
         if (0x5020 <= job_id) {
 
-            int job_bin_base = FhUtil.get_at<int>(0x9F9188); // memory address of job.bin
+            int job_bin_base = FhUtil.get_at<int>(0x9F8188); // memory address of job.bin
             int string_start = *(int*)(job_bin_base + 0x18); // read from excel header
             int string_table_base = job_bin_base + 0x20 + string_start; //base, skip header, jump to start of string table
 

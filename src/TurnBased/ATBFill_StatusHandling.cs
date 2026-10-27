@@ -41,8 +41,7 @@ public unsafe partial class ATBFillModule : FhModule
         //delay from attacks to be added
         uint accrued_delay = (uint)*(int*)(chr_base_address + 0x9e0);
         //calculate ATB timer length and clamp between 0 and 99999
-        int calced_recovery = FhCall.MsCheckRange.fnptr!((int)((cmd_recovery_time / agility_divisor) + accrued_delay), 0, 99999);
-
+        int calced_recovery = int.Clamp((int)((cmd_recovery_time / agility_divisor) + accrued_delay), 0, 99999);
 
         //Haste / Slow Modifier
         //if character is hasted - half recovery time
@@ -64,7 +63,7 @@ public unsafe partial class ATBFillModule : FhModule
         //apply auto ability reduction
         calced_recovery = ((100 - percent_reduction) * calced_recovery) / 100;
 
-        // Accrued delay is reset 
+        // Accrued delay is reset
         *(int*)(chr_base_address + 0x9e0) = 0;
 
 
@@ -109,7 +108,7 @@ public unsafe partial class ATBFillModule : FhModule
             status_bitfield2 = *(uint*)(chr_base + 0x450);
 
             bool isAsleep = (*(uint*)(chr_base + 0x434) >> 2 & 1) == 1;// check sleep state
-            uint sleep_off_count = *(uint*)(chr_base + 0x45c);
+            int sleep_off_count = *(int*)(chr_base + 0x45c);
 
 
             // Handle Sleep
@@ -139,23 +138,22 @@ public unsafe partial class ATBFillModule : FhModule
 
                 // Handle Doom while asleep
                 sbyte doom_count = *(sbyte*)(chr_base + 0x446);
-                int new_doom_count = doom_count - 1;
 
-                if (new_doom_count < 2)
+                if (doom_count > 0)   // if character is Doomed
                 {
-                    uint uVar6 = FFX2.FhCall.MsCheckStatCount.fnptr!(14);
-                    doom_count = (sbyte)FhCall.MsCheckRange.fnptr!(new_doom_count, 0, 0x7d);
-                    *(sbyte*)(chr_base + 0x4c2) = doom_count;
-                    FFX2.FhCall.FUN_00236660.fnptr!(chr_id, chr, (byte)uVar6);   
+                    sbyte new_doom_count = (sbyte)(doom_count - 1);
+                    if (new_doom_count < 2)
+                    {
+                        uint statIdx = FFX2.FhCall.MsCheckStatCount.fnptr!(14);
+                        *(sbyte*)(chr_base + 0x4c2) = sbyte.Clamp(new_doom_count, 0, 0x7d);
+                        FFX2.FhCall.FUN_00236660.fnptr!(chr_id, chr, (byte)statIdx);
+                    }
+                    else
+                    {
+                        *(sbyte*)(chr_base + 0x446) = sbyte.Clamp(new_doom_count, 0, 0x7d);
+                        *(sbyte*)(chr_base + 0x4c2) = sbyte.Clamp(new_doom_count, 0, 0x7d);
+                    }
                 }
-                else
-                {
-                    uint uVar6 = FFX2.FhCall.MsCheckStatCount.fnptr!(14);
-                    doom_count = (sbyte)FhCall.MsCheckRange.fnptr!(new_doom_count, 0, 0x7d);
-                    *(sbyte*)(chr_base + 0x446) = doom_count;
-                }
-
-                
 
                     *(uint*)(chr_base + 0x450) = status_bitfield2;// write the character's updated status bitfield
 

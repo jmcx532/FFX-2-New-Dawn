@@ -24,6 +24,8 @@ public struct ComInfo
 public partial class BattleMenuModule : FhModule
 {
 
+    //private APSystemModule? _APSystem;
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public unsafe delegate int MsGetComData(uint arg1, byte** arg2);
     private static FhMethodHandle<MsGetComData> _MsGetComData =>
@@ -77,7 +79,7 @@ public partial class BattleMenuModule : FhModule
     // Re-review
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void d_TOMkpComIconRGBA(uint com_id, int param_2, int param_3, byte r, byte g, byte b, byte a);
-    public static FhMethodHandle<d_TOMkpComIconRGBA> TOMkpComIconRGBA 
+    public static FhMethodHandle<d_TOMkpComIconRGBA> TOMkpComIconRGBA
         => new(new FhMethodLocation("FFX-2.exe", 0x3ae920));
 
     // Re-review
@@ -87,7 +89,9 @@ public partial class BattleMenuModule : FhModule
     public static FhMethodHandle<d_TOMkpComIconNameClutRGBA> TOMkpComIconNameClutRGBA
         => new(new FhMethodLocation("FFX-2.exe", 0x3ae8f0));
 
-    public BattleMenuModule() { }
+    public BattleMenuModule() {
+
+    }
 
 
     /// <summary>
@@ -104,25 +108,28 @@ public partial class BattleMenuModule : FhModule
     public unsafe void h_TOMkpComIconNameClutRGBA(uint com_id, int param_2, int param_3, uint com_disabled, byte red, byte green, byte blue, int alpha)
     {
 
+        uint btl_menu_chr_id = FhUtil.get_at<uint>(0xDB647C);
+        Chr* chr_pointer = FFX2.FhCall.MsGetChr.fnptr!(btl_menu_chr_id);
+        uint chr_addr = (uint)chr_pointer;
+        uint status_map = *(uint*)(chr_addr + 0x434);
+
         int com_addr = _MsGetComData.fnptr!(com_id, (byte**)0);
         byte com_mp_cost = *(byte*)(com_addr + 0x26);
+
+        com_mp_cost = (byte)MsGetCommandMP.fnptr!(btl_menu_chr_id, com_id);
 
         float x_offset = 3.0f;
         int y_offset = 3;
         if (com_mp_cost > 0)
         {
-            uint color = 0x80808080;
-            if (com_disabled == 1)
-            {
-                color = 0x40404040;
-            }
-            TOMkpValueRightPackRGBA.fnptr!(com_mp_cost, (int)(param_2 * x_offset), param_3 + y_offset, color);
+            uint abgr_color = 0x80808080;
+
+            if (((status_map >> 8) & 1) == 1) { abgr_color = 0x802020FF; } // Curse turns MP number red
+
+            if (com_disabled == 1) { abgr_color = 0x40404040; }
+
+            TOMkpValueRightPackRGBA.fnptr!(com_mp_cost, (int)(param_2 * x_offset), param_3 + y_offset, abgr_color);
         }
-
-        uint btl_menu_chr_id = FhUtil.get_at<uint>(0xDB647C);
-        Chr* chr_pointer = FFX2.FhCall.MsGetChr.fnptr!(btl_menu_chr_id);
-
-        uint chr_addr = (uint)chr_pointer;
 
         ushort menu_to_reduce_wait1 = *(ushort*)(chr_addr + 0x5b0);
         ushort menu_to_reduce_wait2 = *(ushort*)(chr_addr + 0x5b2);
@@ -164,7 +171,7 @@ public partial class BattleMenuModule : FhModule
         int local_40;
         int local_3c;
         uint com_id;
-        uint rgba_color;
+        uint abgr_color;
         int local_30; // pCom
         //double local_2c;
         //byte local_21;
@@ -201,11 +208,16 @@ public partial class BattleMenuModule : FhModule
         local_21 = (byte)com_info.e5;
         if (local_21 != 0)
         {
-            rgba_color = 0x804b4b4b;
+            abgr_color = 0x804b4b4b;
         }
         else
         {
-            rgba_color = 0x80808080;
+            abgr_color = 0x80808080;
+
+            Chr* chr_pointer = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
+            uint chr_addr = (uint)chr_pointer;
+            uint status_map = *(uint*)(chr_addr + 0x434);
+            if (( ((status_map >> 8) & 1) == 1) && (com_id >> 0xc & 0xfff) == 3) { abgr_color = 0x802020FF; } // Curse turns MP number red
         }
 
         switch (com_info.flow_system)
@@ -280,7 +292,7 @@ public partial class BattleMenuModule : FhModule
                         //iVar5 = FUN_0087e0d0();
                         FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x9618a0), FhUtil.get_at<int>(0x9618a4));
                         //h_FFX2_Set_UI_Scale(_DAT_00d62894, _DAT_00d62898);
-                        TOMkpValueRightPackRGBA.fnptr!(num_to_draw, local_40, local_3c, rgba_color);
+                        TOMkpValueRightPackRGBA.fnptr!(num_to_draw, local_40, local_3c, abgr_color);
                         FFX2.FhCall.FFX2_Reset_UI_Scale.fnptr!();
 
                         //concat_local_20 = (double)CONCAT44((float)((short)((ulonglong)concat_local_20 >> 0x20) * 0xb), (undefined4)concat_local_20);
@@ -308,7 +320,7 @@ public partial class BattleMenuModule : FhModule
 
                             if (!com_dark)
                             {
-                                TOMkpValueRightPackRGBA.fnptr!(num_to_draw, local_40, local_3c, rgba_color);
+                                TOMkpValueRightPackRGBA.fnptr!(num_to_draw, local_40, local_3c, abgr_color);
                             }
 
                             FFX2.FhCall.FFX2_Reset_UI_Scale.fnptr!();
@@ -318,7 +330,7 @@ public partial class BattleMenuModule : FhModule
                             //iVar5 = FUN_0087e0d0();
                             //iVar5 = (float)((short)(local_20 >> 0x20) * 0xb) * FhUtil.get_at<float>(0x961890) + (double)iVar5;
                             num_to_draw = num_to_draw & 0xff;
-                            
+
                             iVar5 = (int)((float)(num_to_draw*0xb) * FhUtil.get_at<float>(0x961890) + iVar5);
 
                             pCVar3 = local_30;
@@ -329,7 +341,7 @@ public partial class BattleMenuModule : FhModule
                         num_to_draw = (uint)MsGetRamChrHP.fnptr!((byte)chr_id);
                         //h_FFX2_Set_UI_Scale(_DAT_00d62894, _DAT_00d62898);
                         FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x9618a0), FhUtil.get_at<int>(0x9618a4));
-                        TOMkpValueRightPackRGBA.fnptr!(num_to_draw, local_40, local_3c, rgba_color);
+                        TOMkpValueRightPackRGBA.fnptr!(num_to_draw, local_40, local_3c, abgr_color);
                         FFX2.FhCall.FFX2_Reset_UI_Scale.fnptr!();
 
                         //concat_local_20 = (double)CONCAT44((float)((short)((ulonglong)concat_local_20 >> 0x20) * 0xb), (undefined4)concat_local_20);
@@ -337,7 +349,7 @@ public partial class BattleMenuModule : FhModule
                         //iVar5 = FUN_0087e0d0();
                         num_to_draw = num_to_draw & 0xff;
                         iVar5 = (int)((float)(num_to_draw * 0xb) * FhUtil.get_at<float>(0x961890) + iVar5);
-                        
+
                         pCVar3 = local_30;
                         param_1 = iVar5;
                         break;
@@ -345,9 +357,9 @@ public partial class BattleMenuModule : FhModule
                         num_to_draw = (uint)MsGetRamChrMP.fnptr!((byte)chr_id);
                         //FFX2_Set_UI_Scale(_DAT_00d62894, _DAT_00d62898);
                         FFX2.FhCall.FFX2_Set_UI_Scale.fnptr!(FhUtil.get_at<int>(0x9618a0), FhUtil.get_at<int>(0x9618a4));
-                        TOMkpValueRightPackRGBA.fnptr!(num_to_draw, local_40, local_3c, rgba_color);
+                        TOMkpValueRightPackRGBA.fnptr!(num_to_draw, local_40, local_3c, abgr_color);
                         FFX2.FhCall.FFX2_Reset_UI_Scale.fnptr!();
-                        
+
                         //concat_local_20 = (double)CONCAT44((float)((short)((ulonglong)concat_local_20 >> 0x20) * 0xb), (undefined4)concat_local_20);
                         //local_2c = (double)param_1;
                         //iVar5 = FUN_0087e0d0();
@@ -361,7 +373,7 @@ public partial class BattleMenuModule : FhModule
 
                         /*         puVar3 = (ushort *)FUN_00625160(local_38,(byte *)&local_44);
                                     iVar5 = (uint)*puVar3 + local_44;
-                         * 
+                         *
                          */
 
 
@@ -388,7 +400,7 @@ public partial class BattleMenuModule : FhModule
                             TOMkpEasyMesFontLClutChrName.fnptr!(text_addr, (float)param_1, (float)(param_2 + -1), local_21);
                         }
 
-                        
+
 
                         //h_TOMkpEasyMesFontLClutChrName(iVar5, (float)param_1, (float)(param_2 + -1), local_21);
 
@@ -412,6 +424,7 @@ public partial class BattleMenuModule : FhModule
     {
         return TOBtlDrawComSet2.hook(this, h_TOBtlDrawComSet2)
             && TOMkpComIconNameClutRGBA.hook(this, h_TOMkpComIconNameClutRGBA);
+            //&& new FhModuleHandle<APSystemModule>(this).try_get_module(out _APSystem);
     }
 
 }

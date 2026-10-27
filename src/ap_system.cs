@@ -17,6 +17,8 @@ public struct DamageBufferStatus
 [FhLoad(FhGameId.FFX2)]
 public partial class APSystemModule : FhModule {
 
+    public const int MP_ALTERATION_CURSE = 5;
+
     #region LocalState
     public static bool y_mp_booster;
     public static bool r_mp_booster;
@@ -68,7 +70,7 @@ public partial class APSystemModule : FhModule {
      * Not chain count, that's a different field.
      */
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public unsafe delegate void d_FUN_6420C0(byte chr_id, Chr* chr, int chr_id2, Chr* chr2, uint cmd_id, uint cmd_addr, int param_7, DamageBufferStatus* dmg_info, uint param_9, int param_10, uint param_11);
+    public unsafe delegate void d_FUN_6420C0(byte chr_id, Chr* chr, int chr_id2, Chr* chr2, uint com_id, uint cmd_addr, int param_7, DamageBufferStatus* dmg_info, uint param_9, int param_10, uint param_11);
     public static FhMethodHandle<d_FUN_6420C0> FUN_6420C0
         => new(new FhMethodLocation("FFX-2.exe", 0x242090));
 
@@ -96,6 +98,16 @@ public partial class APSystemModule : FhModule {
     public delegate uint d_MsGetCommandMP(uint chr_id, uint cmd_id);
     public static FhMethodHandle<d_MsGetCommandMP> MsGetCommandMP
         => new(new FhMethodLocation("FFX-2.exe", 0x21acd0));
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate uint d_MsCheckUseCommand(uint chr_id, uint com_id, int param_3, uint param_4);
+    public static FhMethodHandle<d_MsCheckUseCommand> MsCheckUseCommand
+        => new(new FhMethodLocation("FFX-2.exe", 0x21a840));
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public unsafe delegate int d_FUN_002428E0(uint user_id, Chr* chr_user, int target_id, Chr* chr_target, DamageBufferStatus* damage_buffer_status, int param_6, uint cmd_id, byte param_8, uint param_9, uint param_10);
+    public static FhMethodHandle<d_FUN_002428E0> FUN_002428E0
+        => new(new FhMethodLocation("FFX-2.exe", 0x2428e0));
 
     public APSystemModule() { }
 
@@ -136,6 +148,20 @@ public partial class APSystemModule : FhModule {
     }
 
     /// <summary>
+    ///     Prevent MP restoration when Cursed.
+    /// </summary>
+    public unsafe int h_FUN_002428E0(uint user_id, Chr* chr_user, int target_id, Chr* chr_target, DamageBufferStatus* damage_buffer_status, int param_6, uint com_id, byte param_8, uint param_9, uint param_10)
+    {
+
+        uint tgt_addr = (uint)chr_target;
+        uint tgt_status_map = *(uint*)(tgt_addr + 0x434);
+
+        if ( (((tgt_status_map >> 8) & 1) == 1) && damage_buffer_status->damage_mp < 0) { damage_buffer_status->damage_mp = 0; } // Curse prevents MP restoration
+
+        return FUN_002428E0.chain_from(h_FUN_002428E0).fnptr!(user_id, chr_user, target_id, chr_target, damage_buffer_status, param_6, com_id, param_8, param_9, param_10);
+    }
+
+    /// <summary>
     ///     When Dressphere growth alogrithms are read, force base max MP to be 10.
     /// </summary>
     /// <param name="chr_id"></param>
@@ -161,7 +187,7 @@ public partial class APSystemModule : FhModule {
         MsSetRamChrAbility.chain_from(h_MsSetRamChrAbility).fnptr!(chr_id, ram);
 
         Chr* ptr_chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
-        uint chr_addr = (uint)ptr_chr; 
+        uint chr_addr = (uint)ptr_chr;
 
         // set Local State flags to false and set current MP to 3.
         if (chr_id == 0)
@@ -309,14 +335,17 @@ public partial class APSystemModule : FhModule {
         }
         else
         {
-            
-            if (com_last_used != 0x31ea) // Doesn't restore MP if Time Trip was used - that command refills MP
+            // Rikku Mascot gets 2 MP on turn start
+            if (chr_id == 1 && current_dressphere == 0x501A)
             {
-                APRestoreMP(chr_id, -1);
+                APRestoreMP(chr_id, -2);
+            }else if (com_last_used != 0x31ea) // Doesn't restore MP if Time Trip was used - that command refills MP
+            {
+                APRestoreMP(chr_id, -1); // default case
             }
-            
+
         }
-        
+
 
         // If character is dancing when a player character has turn / can accept input - restore 1 MP
         if (y_dancing) { APRestoreMP(0, -1); }
@@ -352,6 +381,38 @@ public partial class APSystemModule : FhModule {
     }
 
     /// <summary>
+    ///
+    /// </summary>
+    /// <param name="chr_id"></param>
+    /// <param name="cmd_id"></param>
+    /// <param name="param_3"></param>
+    /// <param name="param_4"></param>
+    /// <returns></returns>
+    public unsafe uint h_MsCheckUseCommand(uint chr_id, uint com_id, int param_3, uint param_4)
+    {
+        uint result = MsCheckUseCommand.chain_from(h_MsCheckUseCommand).fnptr!(chr_id, com_id, param_3, param_4);
+
+        if (result == 0xFFFFFFFF) return result;   // original already rejected it
+
+        int cmd_addr = _MsGetComData.fnptr!(com_id, (byte*)0);
+        if (cmd_addr == 0) return result;
+
+        if ((*(uint*)(cmd_addr + 0x14) & 0x10000000) != 0) return result;   // HP-cost commands
+        if (FhUtil.get_at<byte>(0x9F68C5) != 0) return result;              // free-cast debug flag
+
+        uint chr_addr = (uint)FFX2.FhCall.MsGetChr.fnptr!(chr_id);
+        uint status = *(uint*)(chr_addr + 0x434);
+        bool spellspring = (status & 0x2000) != 0;
+        bool cursed = ((status >> 8) & 1) == 1;
+        if (!(spellspring && cursed)) return result;
+
+        uint cost = h_MsGetCommandMP(chr_id, com_id);
+        int mp = *(int*)(chr_addr + 0x3b8);
+        if (mp < param_3 + (int)cost) return 0xFFFFFFFF;   // can't afford: block the cast
+        return cost;
+    }
+
+    /// <summary>
     ///     Changes Magic Booster, Half/One MP Cost and Spellspring behaviour.
     /// </summary>
     /// <param name="chr_id"></param>
@@ -363,7 +424,7 @@ public partial class APSystemModule : FhModule {
         int cmd_addr;
         PlySave* ply_save_ptr;
         uint chr_addr;
-        
+
         AutoAbilityEffectsMap aabimap;
         uint status_map;
         uint mp_cost;
@@ -392,11 +453,11 @@ public partial class APSystemModule : FhModule {
         {
             chr_addr = (uint)FFX2.FhCall.MsGetChr.fnptr!(chr_id);
             status_map = *(uint*)(chr_addr + 0x434);
-            aabimap =  *(AutoAbilityEffectsMap*)(chr_addr + 0x650);
+            aabimap = *(AutoAbilityEffectsMap*)(chr_addr + 0x650);
         }
 
         //mp_cost = 0;
-        mp_cost = 1; // Spellspring now has 1 MP Cost
+        //mp_cost = 1; // Spellspring now has 1 MP Cost
 
         alteration_boost = 0;
         alteration_half = 0;
@@ -404,81 +465,95 @@ public partial class APSystemModule : FhModule {
 
         if (cmd_addr != 0)
         {
-            // spellspring check A - stat_use_mp0
+            // Normal, without spellspring
             if ((status_map & 0x2000) == 0)
             {
                 mp_cost = *(byte*)(cmd_addr + 0x26);
+
+                // Curse increases MP cost
+                if ((((status_map >> 8) & 1) == 1) && mp_cost != 0) { mp_cost = mp_cost + MP_ALTERATION_CURSE; }
             }
             else
             {
                 // Spellspring and SOS Spellspring
-                return 0;
+                mp_cost = *(byte*)(cmd_addr + 0x26);
+
+                if (mp_cost != 0)
+                {
+                    mp_cost = 0;
+                    if (((status_map >> 8) & 1) == 1)
+                    {
+                        mp_cost = mp_cost + MP_ALTERATION_CURSE;
+                    }
+
+                    //return 0;
+                }
             }
 
-            // Initial values (Was used for Spellspring before change above)
-            multiplier = 1;
-            base_amount = 0;
-            //divisor = 1;
-
-            // com_dark check
-            if ((*(uint*)(cmd_addr + 0x14) & 0x10000000) == 0)
-            {
-                // Half MP Cost
-                bVar8 = aabimap.has_half_mp_cost;
-                //bVar8 = (*(ushort*)(aabimap_addr + 4) & 4) != 0;
+                // Initial values (Was used for Spellspring before change above)
                 multiplier = 1;
-                if (bVar8)
-                {
-                    //divisor = 2;
-                    alteration_half = -1;
-                }
-                //base_amount = 1;
                 base_amount = 0;
+                //divisor = 1;
 
-                // One MP Cost
-                if ( aabimap.has_one_mp_cost && (mp_cost != 0))
-                //if (((*(ushort*)(aabimap_addr + 4) & 8) != 0) && (mp_cost != 0))
+                // com_dark check
+                if ((*(uint*)(cmd_addr + 0x14) & 0x10000000) == 0)
                 {
-                    //mp_cost = 1;
-                    //divisor = 1;
+                    // Half MP Cost
+                    bVar8 = aabimap.has_half_mp_cost;
+                    //bVar8 = (*(ushort*)(aabimap_addr + 4) & 4) != 0;
+                    multiplier = 1;
+                    if (bVar8)
+                    {
+                        //divisor = 2;
+                        alteration_half = -1;
+                    }
+                    //base_amount = 1;
                     base_amount = 0;
 
-                    alteration_one = -2;
+                    // One MP Cost
+                    if (aabimap.has_one_mp_cost && (mp_cost != 0))
+                    //if (((*(ushort*)(aabimap_addr + 4) & 8) != 0) && (mp_cost != 0))
+                    {
+                        //mp_cost = 1;
+                        //divisor = 1;
+                        base_amount = 0;
+
+                        alteration_one = -2;
+                    }
+
+                    // If character has Magic Booster, and command is Black or White Magic
+                    if (((aabimap.has_magic_booster && ((*(byte*)(cmd_addr + 0xe) == 1 || *(byte*)(cmd_addr + 0xe) == 2)))))
+                    {
+                        //multiplier = 2;
+                        //base_amount = 0;
+
+                        multiplier = 1;
+                        //base_amount = 2;
+
+                        alteration_boost = 1;
+                    }
                 }
 
-                // If character has Magic Booster, and command is Black or White Magic
-                if (((aabimap.has_magic_booster && ((*(byte*)(cmd_addr + 0xe) == 1 || *(byte*)(cmd_addr + 0xe) == 2)))))
+                //return (base_amount + multiplier * mp_cost) / divisor;
+                int base_calc_mp = (int)(base_amount + multiplier * mp_cost);
+                int modified_mp = base_calc_mp + alteration_boost + alteration_half + alteration_one;
+                uint final_mp_cost;
+
+                if (base_calc_mp > 0)
                 {
-                    //multiplier = 2;
-                    //base_amount = 0;
+                    if (modified_mp < 1)
+                    {
+                        final_mp_cost = 1;
+                        return final_mp_cost;
+                    }
 
-                    multiplier = 1;
-                    //base_amount = 2;
-
-                    alteration_boost = 1;
+                    return (uint)modified_mp;
                 }
+
             }
 
-            //return (base_amount + multiplier * mp_cost) / divisor;
-            int base_calc_mp = (int)(base_amount + multiplier * mp_cost);
-            int modified_mp = base_calc_mp + alteration_boost + alteration_half + alteration_one;
-            uint final_mp_cost;
+            return 0;
 
-            if (base_calc_mp > 0)
-            {
-                if (modified_mp < 1)
-                {
-                    final_mp_cost = 1;
-                    return final_mp_cost;
-                }
-
-                return (uint)modified_mp;
-            }
-
-        }
-
-        return 0;
-        
     }
 
     // When a command consumes HP instead of MP, restore 1 MP (mainly for Dark Knight, Seymour and Ormi)
@@ -498,14 +573,14 @@ public partial class APSystemModule : FhModule {
         // For commands that expend HP instead of MP
         if (com_dark)
         {
-            uVar3 = (uint)FhCall.MsCheckRange.fnptr!(*(int*)(iVar1 + 0x3b4) - amount, 0, *(int*)(iVar1 + 0x384));
+            uVar3 = (uint)int.Clamp(*(int*)(iVar1 + 0x3b4) - amount, 0, *(int*)(iVar1 + 0x384));
             *(int*)(iVar1 + 0x3b4) = (int)uVar3;
             APRestoreMP(chr_id, -1);
             return;
         }
 
         // For commands that use MP
-        uVar3 = (uint)FhCall.MsCheckRange.fnptr!(*(int*)(iVar1 + 0x3b8) - amount, 0, *(int*)(iVar1 + 0x388));
+        uVar3 = (uint)int.Clamp(*(int*)(iVar1 + 0x3b8) - amount, 0, *(int*)(iVar1 + 0x388));
         *(int*)(iVar1 + 0x3b8) = (int)uVar3;
         return;
 
@@ -541,7 +616,7 @@ public partial class APSystemModule : FhModule {
         // If Teleport is used, restore 1 MP.
         if (com_id == 0x31ee)
         {
-            APRestoreMP(chr_id, -11);
+            APRestoreMP(chr_id, -1);
         }
 
         // If Time Trip is used, restore 10 MP.
@@ -549,7 +624,7 @@ public partial class APSystemModule : FhModule {
         {
             APRestoreMP(chr_id, -10);
         }
-        
+
         return FFX2.FhCall.MsCommandComplete.chain_from(h_MsCommandComplete).fnptr!(chr_id, param_2, param_3);
     }
 
@@ -644,6 +719,7 @@ public partial class APSystemModule : FhModule {
                         case 0x5015:
                         case 0x5016:
                         case 0x5017:
+                        case 0x501B:
                         case 0x501D:
                             // Any damage, not from Attack as that already grants AP above and not healing
                             if ( damage_hp > 0 && cmd_id != 0x3032 && cmd_id != 0x3023 && cmd_id != 0x312E && cmd_id != 0x302D )
@@ -657,7 +733,7 @@ public partial class APSystemModule : FhModule {
                             dmg_buf_sts = *(DamageBufferStatus*)param_8;
                             damage_hp = dmg_buf_sts.damage_hp;
 
-                            
+
                             uint tgt_max_hp = *(uint*)(target_addr + 0x384);
                             uint tgt_hp     = *(uint*)(target_addr + 0x3B4);
                             uint missing_hp = tgt_max_hp - tgt_hp;
@@ -716,7 +792,9 @@ public partial class APSystemModule : FhModule {
             && FFX2.FhCall.TOBtlSetATBChr.hook(this, h_TOBtlSetATBChr)
             && FFX2.FhCall.MsCommandComplete.hook(this, h_MsCommandComplete)
             && MsUseChrMP.hook(this, h_MsUseChrMP)
-            && MsGetCommandMP.hook(this, h_MsGetCommandMP);
+            && MsGetCommandMP.hook(this, h_MsGetCommandMP)
+            && MsCheckUseCommand.hook(this, h_MsCheckUseCommand)
+            && FUN_002428E0.hook(this, h_FUN_002428E0);
     }
 
 }

@@ -44,12 +44,12 @@ public partial class SpecialDressphereModule : FhModule
             PlySave* ply_save = MsGetSavePlayerPtr.fnptr!(chr_id);
             //PlySave ply_save = *(PlySave*)ply_save_base;
 
-            Plate equipped_gg = *(Plate*)(MsGetRomPlate.fnptr!(ply_save->equipped_plate, (byte*)(0)));
+            Plate equipped_gg = *MsGetRomPlate.fnptr!(ply_save->equipped_plate, (byte*)(0));
 
-            ply_save->agility = (byte)FhCall.MsCheckRange.fnptr!((((equipped_gg.bonus * 3) + 25) * ply_save->agility / 25 ), 1, 255);
-            ply_save->accuracy = (byte)FhCall.MsCheckRange.fnptr!((((equipped_gg.bonus * 3) + 25) * ply_save->accuracy / 25), 1, 255);
-            ply_save->evasion = (byte)FhCall.MsCheckRange.fnptr!((((equipped_gg.bonus * 3) + 25) * ply_save->evasion / 25), 1, 255);
-            ply_save->luck = (byte)FhCall.MsCheckRange.fnptr!((((equipped_gg.bonus * 3) + 25) * ply_save->luck / 25), 1, 255);
+            ply_save->agility = byte.Clamp((byte)(((equipped_gg.bonus * 3) + 25) * ply_save->agility / 25), 1, 255);
+            ply_save->accuracy = byte.Clamp((byte)(((equipped_gg.bonus * 3) + 25) * ply_save->accuracy / 25), 1, 255);
+            ply_save->evasion = byte.Clamp((byte)(((equipped_gg.bonus * 3) + 25) * ply_save->evasion / 25), 1, 255);
+            ply_save->luck = byte.Clamp((byte)(((equipped_gg.bonus * 3) + 25) * ply_save->luck / 25), 1, 255);
 
         }
     }

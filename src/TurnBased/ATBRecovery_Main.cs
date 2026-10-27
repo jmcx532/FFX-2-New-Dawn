@@ -3,7 +3,7 @@
  * Haste halves recovery time while Slow doubles is (similar to FFX)
  * It also reimplements the cooldown reduction from auto-abilities like Black Magic Lv.2 or Turbo Bushido
  * as the Charge Time mechanic was removed.
- * 
+ *
  * Pairs up with ATBRecovery_StatusHandling.cs (partial class) which re-implements status duration handling
  * Pairs up with ATBRecovery_TurnList which implements the turn order window
  */
@@ -19,12 +19,12 @@ public unsafe partial class ATBRecoveryModule : FhModule {
     public delegate int MsGetComData(uint arg1, byte* arg2);
     private static FhMethodHandle<MsGetComData> _MsGetComData =>
         new(new FhMethodLocation("FFX-2.exe", 0x225130));
-    
+
 
     public ATBRecoveryModule() { }
 
     //SUB-FUNCTIONS
-    
+
 
     //this function returns the base address for various Excel data types
     /*param_1 is the command id (e.g 0x3002)
@@ -32,7 +32,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
         int result = _MsGetComData.chain_from(h_MsGetComData).fnptr!(command_id, param_2);
         return result;
     }*/
-    
+
     //remove thinking time, used to cause a bug with poison/regen, probably OK now, but don't need this mechanic
     public int h_MsATBgetThinkingTime(uint chr_id) {
         int original_result = FFX2.FhCall.MsATBgetThinkingTime.chain_from(h_MsATBgetThinkingTime).fnptr!(chr_id);
@@ -82,13 +82,12 @@ public unsafe partial class ATBRecoveryModule : FhModule {
 
         uint agility_divisor = (uint)Math.Round(divisor);
 
-        
+
 
         //delay from attacks to be added
         uint accrued_delay = (uint)*(int*)(chr_base_address + 0x9e0);
         //calculate ATB timer length and clamp between 0 and 99999
-        uint calced_recovery = (uint)FhCall.MsCheckRange.fnptr!((int)((cmd_recovery_time / agility_divisor) + accrued_delay), 0, 99999);
-
+        uint calced_recovery = uint.Clamp((uint)((cmd_recovery_time / agility_divisor) + accrued_delay), 0, 99999);
 
         //Haste / Slow Modifier
         //if character is hasted - half recovery time
@@ -109,8 +108,8 @@ public unsafe partial class ATBRecoveryModule : FhModule {
 
         //apply auto ability reduction
         calced_recovery = (uint)((100 - percent_reduction) * calced_recovery) / 100;
-            
-        // Accrued delay is reset 
+
+        // Accrued delay is reset
         *(int*)(chr_base_address + 0x9e0) = 0;
 
 
@@ -119,7 +118,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
     }
 
 
-    // A-Ability Charge time reduction function replacement ------------------------------------------- 
+    // A-Ability Charge time reduction function replacement -------------------------------------------
     //returns the proper percentage reduction for auto-abilities that originally reduced charge time
     //so it can be used to reduce ATB recovery instead.
     //For command_used/param_2 it is the command id (for example: 0x308f for Unhinge)
@@ -130,8 +129,8 @@ public unsafe partial class ATBRecoveryModule : FhModule {
         ushort *puVar1;
         int percent_reduction;
         int incV1;
-        
-        //if user has no auto-abilities that reduce recovery time (originally charge time) (e.g Turbo Arcana) 
+
+        //if user has no auto-abilities that reduce recovery time (originally charge time) (e.g Turbo Arcana)
         if (*(char*)(chr_base_addr + 0x5af) == '\0') {
             return 0;
         }
@@ -147,13 +146,13 @@ public unsafe partial class ATBRecoveryModule : FhModule {
         puVar1 = (ushort*)(chr_base_addr + 0x5b0);
 
         do {
-            //get the percentage reduction 
+            //get the percentage reduction
             percent_reduction = (int)*(byte*)(chr_base_addr + 0x5b8 + incV1);
-            
+
             //get the base address of the menu command (e.g White Magic, Swordplay etc.)
             menu_cmd_addr = _MsGetComData.fnptr!((uint)*puVar1, (byte*)(0));
-            
-                
+
+
             //condition 1: do something with the menu commands 'sub_command' parameter
             //condition 2: do something with the player chosen command 'sub_command parameter'
             //condition 3: check if the player chosen commands 'flow_system' parameter matches the menu_cmd 'system' parameter
@@ -162,7 +161,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
                    (*(byte*)(cmd_base_addr + 0xf) == *(byte*)(menu_cmd_addr + 0xe))) {
                     recov_time_reduction = recov_time_reduction + percent_reduction;
             }
-            
+
             incV1 = incV1 + 1;
             puVar1 = puVar1 + 1;
         } while (incV1 < (int)(uint)*(byte*)(chr_base_addr + 0x5af));
@@ -171,12 +170,12 @@ public unsafe partial class ATBRecoveryModule : FhModule {
         if (recov_time_reduction == 0) {
             return 0;
         }
-        recov_time_reduction = FhCall.MsCheckRange.fnptr!(recov_time_reduction, -100, 100);
+        recov_time_reduction = int.Clamp(recov_time_reduction, -100, 100);
         return recov_time_reduction;
     }
 
 
-    //6401c0 - called 'once' after character takes turn -------------------------------------------------------- 
+    //6401c0 - called 'once' after character takes turn --------------------------------------------------------
     public uint h_MsCommandComplete(uint chr_id, int param_2, int param_3) {
 
         //run the orignal function
@@ -214,8 +213,8 @@ public unsafe partial class ATBRecoveryModule : FhModule {
 
     //function to disable Psychics Time Trip command --------------------------------------
     public void disable_time_Trip() {
-        
-            //get the commands data 
+
+            //get the commands data
             int tt_exp_data = _MsGetComData.fnptr!(0x31EA, (byte*)(0));
             int tt_mp_cost = _MsGetComData.fnptr!(0x31EA, (byte*)(0));
 
@@ -223,11 +222,11 @@ public unsafe partial class ATBRecoveryModule : FhModule {
             *(int*)(tt_exp_data + 0x14) |= (1 << 28);
             /*set its MP cost so high it requires all of the users HP -- command is greyed out because
              * it can't be used if HP is not high enough*/
-            *(byte*)(tt_mp_cost + 0x26) = 128; 
-        
+            *(byte*)(tt_mp_cost + 0x26) = 128;
+
     }
 
-    
+
     // FH init ------------------------------------------------------------------------------------
     public override bool init(FhModContext mod_context, FileStream global_state_file) {
         return FFX2.FhCall.MsATBgetRestTime.hook(this, h_MsATBgetRestTime)

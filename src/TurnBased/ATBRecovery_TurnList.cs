@@ -10,7 +10,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
     const int ATB_LENGTH_OFFSET = 0x9DC;
 
     const uint TURNS_TO_SHOW = 16;
-    
+
     int ReadATBValue(uint chr_id) {
         Chr* chr = FFX2.FhCall.MsGetChr.fnptr!(chr_id);
         int chr_base_addr = (int)chr;
@@ -20,7 +20,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
     }
 
     public struct SimTurnEntry {
-        public uint chr_id; 
+        public uint chr_id;
         public int time; // at what point of simulation is the turn
         public string chr_name;
         public bool is_Targeted;
@@ -137,7 +137,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
             bool comInflictsSlow = (*(byte*)(cmd_base + 0x4c) > 0) && !comHealsStatuses;       // Does command inflict Slow
 
             uint com_exp_data = *(uint*)(cmd_base + 0x14);                  // get exp_data flags
-            
+
 
             uint WEAK_DELAY = FhUtil.get_at<uint>(0x9F6EA0);
             uint STRONG_DELAY = FhUtil.get_at<uint>(0x9F6EA4);
@@ -165,9 +165,9 @@ public unsafe partial class ATBRecoveryModule : FhModule {
                         if (comInflictsSlow && !unit.hasSlow) { unit.atb_remaining += (int)STRONG_DELAY; }
                     }
 
-                   
+
                     bool cmdTgtsATBNoHasteOrSlow = (cmdHasATBHealingOrDmg && !comInflictsHaste && !comInflictsSlow);
-                    
+
 
                     if (cmdHasATBHealingOrDmg) {
                         byte cmd_power = *(byte*)(cmd_base + 0x2b);
@@ -220,12 +220,12 @@ public unsafe partial class ATBRecoveryModule : FhModule {
         return turn_order;
     }
 
-    public int SimGetATBRestTime(uint chr_id, uint command_id, bool evaluate_spherechange) { 
+    public int SimGetATBRestTime(uint chr_id, uint command_id, bool evaluate_spherechange) {
         int recovery_time;
         SimBattleUnit? BattleUnit = BattleUnits.FirstOrDefault(chr => chr.chr_id == chr_id);
-        if (BattleUnit == null) { 
-            _logger.Info("SimGetATBRestTime: BattleUnit Null"); 
-            return 0; 
+        if (BattleUnit == null) {
+            _logger.Info("SimGetATBRestTime: BattleUnit Null");
+            return 0;
         }
 
         int cmd_base_address = _MsGetComData.fnptr!(command_id, (byte*)(0));
@@ -244,7 +244,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
         }
         uint agility_divisor = (uint)Math.Round(divisor);
 
-        recovery_time = FhCall.MsCheckRange.fnptr!((int)((cmd_recovery_time / agility_divisor)), 0, 99999);
+        recovery_time = int.Clamp((int)((cmd_recovery_time / agility_divisor)), 0, 99999);
 
         if (BattleUnit.hasHaste){ recovery_time = recovery_time / 2; }
         if (BattleUnit.hasSlow) { recovery_time = recovery_time * 2; }
@@ -270,7 +270,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
                 break;
         }
 
-         
+
         if (spherechange_menu_open == 1 && evaluate_spherechange) {
             int job_base_address = GetDressphereJobData(highlighted_dressphere);
             if (job_base_address != 0) {
@@ -374,7 +374,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
     uint GetCharacterColor(int chrId) {
         return chrId switch {
             0 => ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 0.25f, 0.55f, 1f)), // red/pink - Yuna
-            1 => ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 0.63f, 0.04f, 1f)), // yellow - Rikku 
+            1 => ImGui.ColorConvertFloat4ToU32(new Vector4(1.0f, 0.63f, 0.04f, 1f)), // yellow - Rikku
             2 => ImGui.ColorConvertFloat4ToU32(new Vector4(0.5f, 0.4f, 1.0f, 1f)),   // purple - Paine
             3 => ImGui.ColorConvertFloat4ToU32(new Vector4(0.6f, 0.15f, 0.3f, 1f)),   // darker pink - Pistil?
             4 => ImGui.ColorConvertFloat4ToU32(new Vector4(0.6f, 0.15f, 0.3f, 1f)),   // darker pink - Pistil?
@@ -403,8 +403,8 @@ public unsafe partial class ATBRecoveryModule : FhModule {
             ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.18f, 0.28f, 0.15f, 0.0f)); // Green
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(4, 2));
             ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0.0f);
-            
-            
+
+
             ImGui.SetNextWindowSize(new Vector2(585, 45), ImGuiCond.Always);
             // Turn list, musical staff style
             ImGui.Begin(
@@ -474,7 +474,7 @@ public unsafe partial class ATBRecoveryModule : FhModule {
                 colMid, colRight, colRight, colMid
             );
 
-            
+
             // Start drawing musical notes sheet
             float padding = 4f;
             float timelineStartX = canvasPos.X + padding;

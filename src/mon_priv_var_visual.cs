@@ -26,7 +26,6 @@ public partial class MonPrivVarsModule : FhModule
 
     public MonPrivVarsModule() { }
 
-    // p1 being a basic worker address is uncertain. 
     // for X-2's Magus sister fight, with 0, 4, 0 get's Mindy's counter. Sandy's is 32 bytes after, and Cindy's is 32 bytes after that.
     // For single characters, just use 0, the correct var_num and 0. some_idx doesn't seem to change the result.
     public unsafe int GenericPrivVarGetter(int basic_worker_addr, int var_num, int some_idx)
@@ -125,7 +124,7 @@ public partial class MonPrivVarsModule : FhModule
             int enemy1_title_y = *(int*)(enemy1_chr_base + 0x17b8);
             int enemy1_title_y_offset = 0;
             float enemy1_count = 0;
-            
+
 
             uint gauge_status = 3;
 
@@ -139,7 +138,7 @@ public partial class MonPrivVarsModule : FhModule
             {
                 case "ikai09_227":
                     int anima_oblivion_counter_address = GenericPrivVarGetter(0, 2, 0);
-                    
+
                     enemy1_count = *(int*)anima_oblivion_counter_address;
                     enemy1_title_x_offset = -35;
                     draw_od_gauge = true;
@@ -147,14 +146,14 @@ public partial class MonPrivVarsModule : FhModule
 
                 case "klyt11_229":
                     int ifrit_counter_address = GenericPrivVarGetter(0, 2, 0);
-                    
+
                     enemy1_count = *(int*)ifrit_counter_address;
                     enemy1_title_x_offset = -30;
                     draw_od_gauge = true;
                     break;
                 case "bsyt05_229":
                     int valefor_counter_address = GenericPrivVarGetter(0, 2, 0);
-                    
+
                     enemy1_count = *(int*)valefor_counter_address;
                     enemy1_title_x_offset = -25;
                     enemy1_title_y_offset = 150;
@@ -162,7 +161,7 @@ public partial class MonPrivVarsModule : FhModule
                     break;
                 case "nagi05_229":
                     int yojimbo_counter_address = GenericPrivVarGetter(0, 3, 0);
-                    
+
                     enemy1_count = *(int*)yojimbo_counter_address;
                     enemy1_title_x_offset = -50;
                     draw_od_gauge = true;
@@ -177,7 +176,7 @@ public partial class MonPrivVarsModule : FhModule
                         enemy1_count = 0;
                     }
                     enemy1_count = enemy1_count * 20;
-                    
+
                     enemy1_title_x_offset = -40;
                     draw_od_gauge = true;
                     break;
@@ -232,7 +231,7 @@ public partial class MonPrivVarsModule : FhModule
                     draw_od_gauge = true;
                     break;
                 case "wegn01_226":
-                    
+
                     int vegnagun_countdown = battle_vars[0x28 / sizeof(int)]; // BattleVar0028
 
                     gauge_status = 2;
@@ -258,7 +257,29 @@ public partial class MonPrivVarsModule : FhModule
                     {
                         draw_concherer_gauge = false;
                     }
-                    
+
+                    break;
+                case "stbv09_224":
+                    byte paragon_oversouled = *(byte*)(enemy1_chr_base + 0x3a9);
+                    int paragon_counter_address = GenericPrivVarGetter(0, 1, 0) + 164;
+                    if (paragon_oversouled == 1)
+                    {
+                        paragon_counter_address = GenericPrivVarGetter(0, 4, 0);
+                        enemy1_count = *(int*)(paragon_counter_address) * 10;
+                        if (enemy1_count != 0)
+                        {
+                            enemy1_count = enemy1_count + 10;
+                        }
+                    }
+                    else
+                    {
+                        enemy1_count = *(int*)(paragon_counter_address) * 10;
+                    }
+
+
+                    //enemy1_title_x_offset = -30;
+
+                    draw_od_gauge = true;
                     break;
             }
 
@@ -273,7 +294,7 @@ public partial class MonPrivVarsModule : FhModule
                 //arg5 must be 100.0f for the gauge to be the correct length
                 TOMkpATBGauge.chain_from(h_TOMkpATBGauge).fnptr!(0xf, enemy1_title_x + enemy1_title_x_offset, enemy1_title_y + enemy1_title_y_offset, enemy1_count, 100.0f, gauge_status);
             }
-            
+
             if (draw_concherer_gauge){
                 TOMkpATBGauge.chain_from(h_TOMkpATBGauge).fnptr!(0xf, enemy1_title_x + enemy1_title_x_offset, enemy1_title_y + enemy1_title_y_offset, enemy1_count, 100.0f, gauge_status);
             }
@@ -307,7 +328,7 @@ public partial class MonPrivVarsModule : FhModule
 
                 }
 
-                
+
 
                 for (int i = 0; i < 4; i++)
                 {
@@ -335,8 +356,8 @@ public partial class MonPrivVarsModule : FhModule
 
         }
     }
-        
-    
+
+
     private string addr_string = "Address Here";
     private bool get_addr = false;
 
@@ -418,7 +439,7 @@ public partial class MonPrivVarsModule : FhModule
             ImGui.End();
 
         }
-            
+
     }
 #endif
 
@@ -426,7 +447,7 @@ public partial class MonPrivVarsModule : FhModule
     {
 
         return TOMkpATBGauge.hook(this, h_TOMkpATBGauge);
-            
+
     }
 
 }
